@@ -285,6 +285,7 @@ const TikTokOEmbed = ({
     fallbackHeight: defaultPlaceholderHeight,
     scale,
     height,
+    waitForMeasure: height == null,
   });
 
   return (
