@@ -295,7 +295,7 @@ const TikTokOEmbed = ({
   const { frameHeight, showPlaceholder } = resolveEmbedFrame({
     ready: embedReady,
     measuredHeight: videoHeight,
-    fallbackHeight: defaultPlaceholderHeight,
+    fallbackHeight: resolvedPlaceholder != null ? defaultPlaceholderHeight : 0,
     scale,
     height,
     waitForMeasure: height == null,

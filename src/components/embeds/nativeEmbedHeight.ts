@@ -1,4 +1,4 @@
-import { MAX_EMBED_HEIGHT, MIN_EMBED_HEIGHT, isStubEmbedHeight } from '../../utils/embedHeight';
+import { clampEmbedHeight } from '../../utils/embedHeight';
 
 export const AUTO_HEIGHT_TOPIC = 'rsme-ah';
 
@@ -21,14 +21,7 @@ export const parseAutoHeightMessage = (data: unknown): number | undefined => {
   if (record.topic !== AUTO_HEIGHT_TOPIC || typeof record.height !== 'number') {
     return undefined;
   }
-  if (
-    record.height < MIN_EMBED_HEIGHT ||
-    record.height > MAX_EMBED_HEIGHT ||
-    isStubEmbedHeight(record.height)
-  ) {
-    return undefined;
-  }
-  return Math.round(record.height);
+  return clampEmbedHeight(record.height);
 };
 
 /**

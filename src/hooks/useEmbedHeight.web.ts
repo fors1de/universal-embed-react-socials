@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { clampEmbedHeight, parseEmbedHeight } from '../utils/embedHeight';
+import { clampEmbedHeight, parseEmbedHeight, takeMeasuredHeight } from '../utils/embedHeight';
 import { embedMaxWidthStyle, isPercentage } from '../utils/style';
 
 export { parseEmbedHeight };
@@ -79,10 +79,12 @@ export const useAutoEmbedHeight = ({
 } = {}) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const stubSkipsRef = useRef(0);
   const [measured, setMeasured] = useState<number | undefined>();
 
   useEffect(() => {
     setMeasured(undefined);
+    stubSkipsRef.current = 0;
   }, [resetKey]);
 
   useEffect(() => {
@@ -100,7 +102,7 @@ export const useAutoEmbedHeight = ({
     const defaultSelector = measureSelector ?? 'iframe';
 
     const handleFrameMessage = (event: MessageEvent) => {
-      const next = parseEmbedHeight(event.data);
+      const next = takeMeasuredHeight(parseEmbedHeight(event.data), stubSkipsRef);
       if (next) {
         setMeasured((prev) => (prev === next ? prev : next));
       }
@@ -116,7 +118,10 @@ export const useAutoEmbedHeight = ({
         return;
       }
       const rect = source.getBoundingClientRect();
-      const next = clampEmbedHeight(Math.ceil(Math.max(rect.height, source.scrollHeight)));
+      const next = takeMeasuredHeight(
+        clampEmbedHeight(Math.ceil(Math.max(rect.height, source.scrollHeight))),
+        stubSkipsRef,
+      );
       if (next) {
         setMeasured((prev) => (prev === next ? prev : next));
       }
@@ -176,7 +181,10 @@ export const useAutoEmbedHeight = ({
     const readHeight = () => {
       const iframe = node.querySelector('iframe');
       const widget = iframe ?? node;
-      const next = clampEmbedHeight(Math.ceil(Math.max(widget.scrollHeight, widget.offsetHeight)));
+      const next = takeMeasuredHeight(
+        clampEmbedHeight(Math.ceil(Math.max(widget.scrollHeight, widget.offsetHeight))),
+        stubSkipsRef,
+      );
       if (next) {
         setMeasured((prev) => (prev === next ? prev : next));
       }

@@ -60,14 +60,6 @@ export const LinkedInEmbed = ({
     }, EMBED_GIVE_UP_MS);
     return () => window.clearTimeout(id);
   }, [url, embedDisabled, ready]);
-  const { frameHeight: shellHeight, showPlaceholder } = resolveEmbedFrame({
-    ready: !embedDisabled && ready,
-    fallbackHeight: LINKEDIN_DESIGN_HEIGHT,
-    scale,
-    height,
-    waitForMeasure: false,
-  });
-
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url: postUrl ?? url,
     placeholderText,
@@ -90,6 +82,13 @@ export const LinkedInEmbed = ({
     embedHeight: '100%',
     providerWidth: LINKEDIN_DESIGN_WIDTH,
     providerHeight: LINKEDIN_DESIGN_HEIGHT,
+  });
+  const { frameHeight: shellHeight, showPlaceholder } = resolveEmbedFrame({
+    ready: !embedDisabled && ready,
+    fallbackHeight: resolvedPlaceholder != null ? LINKEDIN_DESIGN_HEIGHT : 0,
+    scale,
+    height,
+    waitForMeasure: false,
   });
 
   return (

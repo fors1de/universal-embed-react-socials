@@ -23,7 +23,6 @@ export const PinterestEmbed = ({
       placeholderUrl={pinUrl}
       html={html}
       baseUrl="https://www.pinterest.com"
-      autoHeight
       fallbackHeight={officialEmbedHeight}
     />
   );

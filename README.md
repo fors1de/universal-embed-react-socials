@@ -106,6 +106,8 @@ import { XEmbed } from "@fors1de/universal-embed-react-socials";
 <XEmbed url="https://twitter.com/PixelAndBracket/status/1356633038717923333" />;
 ```
 
+X's official widget is 550px wide. A numeric `maxWidth` is capped at 550; a percentage or CSS length (`"50%"`, `"400px"`) is used as given.
+
 `TwitterEmbed` is still exported as a deprecated alias of `XEmbed`.
 
 ### YouTube
@@ -154,7 +156,7 @@ Every embed accepts:
 - `url`
 - `maxWidth` / `height` — On web, omit `maxWidth` to fill the container (`100%`). Pass a pixel or percent value to cap it. Omit `height` to size the embed from the platform when it reports it.
 - `placeholderText` — text on the default placeholder.
-- `placeholder` — custom loading UI. Replaces the default placeholder.
+- `placeholder` — custom loading UI. Replaces the default placeholder. Pass `null` or `() => null` to render nothing and reserve no height until the embed is ready.
 - `placeholderWidth` / `placeholderHeight` / `placeholderStyle` — optional overrides. By default the placeholder matches the embed size, or the provider’s default size before the embed has measured.
 - `placeholderImageUrl` / `placeholderSpinner` / `placeholderSpinnerDisabled` / `placeholderProps`
 - `placeholderDisabled` — hide the placeholder.

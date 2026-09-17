@@ -28,11 +28,8 @@ export const resolveEmbedFrame = ({
   height?: string | number;
   waitForMeasure?: boolean;
 }): { frameHeight: string | number; showPlaceholder: boolean } => {
-  if (height != null && !isPercentage(height)) {
+  if (height != null) {
     return { frameHeight: height, showPlaceholder: !ready };
-  }
-  if (isPercentage(height)) {
-    return { frameHeight: '100%', showPlaceholder: !ready };
   }
   const scaledFallback = Math.round(fallbackHeight * scale);
   const scaledMeasured =
@@ -63,12 +60,17 @@ export const embedMaxWidthStyle = (
   maxWidth?: string | number,
   fallbackMax?: number,
 ): CSSProperties => {
-  if (isPercentage(maxWidth) || maxWidth == null) {
-    return { width: maxWidth ?? DEFAULT_WEB_EMBED_WIDTH, maxWidth: '100%' };
+  if (maxWidth == null) {
+    return { width: DEFAULT_WEB_EMBED_WIDTH, maxWidth: '100%' };
   }
-  const size = typeof maxWidth === 'number' ? maxWidth : fallbackMax;
+  if (typeof maxWidth === 'number') {
+    return { width: maxWidth, maxWidth: '100%' };
+  }
+  if (isPercentage(maxWidth) || maxWidth.trim() !== '') {
+    return { width: maxWidth, maxWidth: '100%' };
+  }
   return {
-    width: size ?? DEFAULT_WEB_EMBED_WIDTH,
+    width: fallbackMax ?? DEFAULT_WEB_EMBED_WIDTH,
     maxWidth: '100%',
   };
 };
@@ -79,18 +81,23 @@ export const embedScaleStyle = (scale: number, designWidth: number): CSSProperti
   transformOrigin: 'top left',
 });
 
-export const toNativeSize = (value: string | number | undefined, fallback: number): number => {
-  if (typeof value === 'number' && !Number.isNaN(value)) {
+/** Pixel number, unitless numeric string, or `Npx`. Other CSS units are not converted. */
+export const parseCssPx = (value: string | number | undefined): number | undefined => {
+  if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
     return value;
   }
-  if (typeof value === 'string' && !value.includes('%')) {
-    const parsed = parseFloat(value);
-    if (!Number.isNaN(parsed)) {
-      return parsed;
-    }
+  if (typeof value !== 'string') {
+    return undefined;
   }
-  return fallback;
+  const match = value.trim().match(/^(\d+(?:\.\d+)?)(px)?$/i);
+  if (!match) {
+    return undefined;
+  }
+  return Number(match[1]);
 };
+
+export const toNativeSize = (value: string | number | undefined, fallback: number): number =>
+  parseCssPx(value) ?? fallback;
 
 export const collapsedEmbedStyle = (collapsed: boolean): CSSProperties =>
   collapsed ? { height: 0, minHeight: 0, overflow: 'hidden' } : {};
@@ -100,8 +107,8 @@ export const boxSizeStyle = (
   height?: string | number,
   extra?: CSSProperties,
 ): CSSProperties => ({
-  overflow: 'hidden',
-  width: width ?? undefined,
-  height: height ?? undefined,
   ...extra,
+  overflow: 'hidden',
+  ...(width != null ? { width } : {}),
+  ...(height != null ? { height } : {}),
 });

@@ -6,7 +6,7 @@ import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { ensureScript } from '../../utils/ensureScript';
 import { useFrame } from '../../hooks/useFrame';
-import { placeholderOverlayStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
+import { placeholderOverlayStyle, resolveEmbedFrame, resolveEmbedMaxWidth, isPercentage } from '../../utils/style';
 import { Subs } from '../../utils/subs';
 import { getXPostId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
@@ -60,9 +60,11 @@ export const XEmbed = ({
   const boxStyle = {
     width: '100%' as const,
     maxWidth:
-      typeof resolvedMaxWidth === 'number'
-        ? Math.min(resolvedMaxWidth, officialEmbedWidth)
-        : officialEmbedWidth,
+      maxWidth != null && (isPercentage(maxWidth) || typeof maxWidth === 'string')
+        ? maxWidth
+        : typeof resolvedMaxWidth === 'number'
+          ? Math.min(resolvedMaxWidth, officialEmbedWidth)
+          : officialEmbedWidth,
   };
 
   useEffect(() => {
@@ -137,7 +139,7 @@ export const XEmbed = ({
   const { frameHeight, showPlaceholder } = resolveEmbedFrame({
     ready: !embedDisabled && ready,
     measuredHeight: observedHeight,
-    fallbackHeight: defaultPlaceholderHeight,
+    fallbackHeight: resolvedPlaceholder != null ? defaultPlaceholderHeight : 0,
     height,
   });
 

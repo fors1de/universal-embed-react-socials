@@ -138,13 +138,6 @@ export const FacebookEmbed = ({
     return () => window.clearTimeout(timer);
   }, [autoHeight, ready, embedDisabled, isolateBlob, usePluginFallback]);
 
-  const frameHeight =
-    typeof height === 'number' ? height : (contentHeight ?? fallbackHeight);
-  const shellHeight = percentageHeight
-    ? '100%'
-    : Math.round(frameHeight * (typeof height === 'number' ? 1 : scale));
-  const showPlaceholder = !ready && !placeholderDisabled;
-
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url,
     placeholderText,
@@ -168,6 +161,14 @@ export const FacebookEmbed = ({
     providerWidth: pluginWidth,
     providerHeight: fallbackHeight,
   });
+  const frameHeight =
+    typeof height === 'number'
+      ? height
+      : (contentHeight ?? (resolvedPlaceholder != null || ready ? fallbackHeight : 0));
+  const shellHeight = percentageHeight
+    ? height
+    : Math.round(frameHeight * (typeof height === 'number' ? 1 : scale));
+  const showPlaceholder = !ready && !placeholderDisabled && resolvedPlaceholder != null;
   const facebookFrameProps = {
     width: pluginWidth,
     allow: 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share',

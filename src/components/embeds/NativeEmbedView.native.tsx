@@ -7,6 +7,7 @@ import type {
   EmbedWebViewOpenWindowEvent,
 } from '../../types';
 import { EMBED_MAX_CRASH_RELOADS } from '../../utils/embedLoad';
+import { takeMeasuredHeight } from '../../utils/embedHeight';
 import { toNativeSize } from '../../utils/style';
 import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import {
@@ -117,6 +118,7 @@ export const NativeEmbedView = ({
   const blocked = embedDisabled || (lazy && !lazyVisible);
   const lazyCheckRef = useRef(() => {});
   const crashReloadsRef = useRef(0);
+  const stubSkipsRef = useRef(0);
   const reportError = useEmbedOnError(onError, url);
 
   useEffect(() => {
@@ -124,6 +126,7 @@ export const NativeEmbedView = ({
     setMeasuredHeight(0);
     setSizeTimedOut(false);
     crashReloadsRef.current = 0;
+    stubSkipsRef.current = 0;
   }, [html, uri]);
 
   useEffect(() => {
@@ -178,6 +181,15 @@ export const NativeEmbedView = ({
   const showPlaceholder = hasPlaceholder && (blocked || !ready || waitingForSize);
 
   useEffect(() => {
+    if (autoHeightEnabled) {
+      return;
+    }
+    setMeasuredHeight(0);
+    setSizeTimedOut(false);
+    stubSkipsRef.current = 0;
+  }, [autoHeightEnabled, height]);
+
+  useEffect(() => {
     if (!waitingForSize || !ready) {
       return;
     }
@@ -185,15 +197,16 @@ export const NativeEmbedView = ({
     return () => clearTimeout(id);
   }, [ready, waitingForSize]);
   const useAspectRatio = aspectRatio != null && height == null && !autoHeightEnabled;
-  const designHeight =
-    measuredHeight > 0 ? measuredHeight : toNativeSize(height, fallbackHeight);
+  const designHeight = autoHeightEnabled && measuredHeight > 0
+    ? measuredHeight
+    : toNativeSize(height, fallbackHeight);
   const fitScale = fitEnabled && boxWidth > 0 ? boxWidth / fitDesignWidth : 1;
   const fittedHeight = fitEnabled ? Math.max(1, Math.round(designHeight * fitScale)) : undefined;
   const resolvedHeight = useAspectRatio
     ? undefined
     : fittedHeight != null
       ? fittedHeight
-      : measuredHeight > 0
+      : autoHeightEnabled && measuredHeight > 0
         ? measuredHeight
         : toNativeSize(height, ready || hasPlaceholder || blocked ? fallbackHeight : 0);
   const {
@@ -294,7 +307,10 @@ export const NativeEmbedView = ({
               if (!autoHeightEnabled) {
                 return;
               }
-              const next = parseAutoHeightMessage(event?.nativeEvent?.data);
+              const next = takeMeasuredHeight(
+                parseAutoHeightMessage(event?.nativeEvent?.data),
+                stubSkipsRef,
+              );
               if (next) {
                 setMeasuredHeight((prev) => (prev === next ? prev : next));
               }

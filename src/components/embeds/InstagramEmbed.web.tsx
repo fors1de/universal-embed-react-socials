@@ -222,7 +222,7 @@ export const InstagramEmbed = ({
   const { frameHeight, showPlaceholder } = resolveEmbedFrame({
     ready: embedReady,
     measuredHeight: observedHeight,
-    fallbackHeight,
+    fallbackHeight: resolvedPlaceholder != null ? fallbackHeight : 0,
     scale,
     height,
   });

@@ -101,10 +101,6 @@ export const PinterestEmbed = ({
 
   const frameHeight = typeof height === 'number' ? height : pinHeight;
   const ready = !embedDisabled && frameHeight > 0;
-  const shellHeight = percentageHeight
-    ? '100%'
-    : frameHeight || (embedDisabled ? officialEmbedHeight : undefined);
-
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url: postHref,
     placeholderText,
@@ -128,6 +124,9 @@ export const PinterestEmbed = ({
     providerWidth: resolvedMaxWidth,
     providerHeight: officialEmbedHeight,
   });
+  const shellHeight = percentageHeight
+    ? height
+    : frameHeight || (embedDisabled ? officialEmbedHeight : undefined);
 
   return (
     <div ref={lazyRef} style={{ ...embedMaxWidthStyle(resolvedMaxWidth), minWidth: 0 }}>
