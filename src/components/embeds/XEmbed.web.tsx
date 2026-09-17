@@ -77,13 +77,18 @@ export const XEmbed = ({
       return;
     }
 
-    if (!win.twttr?.widgets?.load) {
-      ensureScript(doc, 'twitter-widgets-script', 'https://platform.twitter.com/widgets.js');
-    }
-
     let processed = false;
     const subs = new Subs();
     const cleanup = subs.createCleanup();
+
+    if (!win.twttr?.widgets?.load) {
+      ensureScript(doc, 'twitter-widgets-script', 'https://platform.twitter.com/widgets.js', () => {
+        setFailed(true);
+        reportError('script-missing');
+        cleanup();
+      });
+    }
+
     subs.setInterval(() => {
       if (!processed && win.twttr?.widgets?.load) {
         win.twttr.widgets.load((doc.getElementById(embedId) as Element | undefined) ?? undefined);

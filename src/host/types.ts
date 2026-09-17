@@ -41,6 +41,7 @@ export interface IFrameProps {
   className?: string;
   style?: CSSProperties;
   onLoad?: () => void;
+  onError?: () => void;
   allow?: string;
   allowFullScreen?: boolean;
   title?: string;

@@ -114,7 +114,10 @@ export const InstagramEmbed = ({
     if (embedDisabled || stage !== LOAD_SCRIPT_STAGE || !frm.document) {
       return;
     }
-    ensureScript(frm.document, INSTAGRAM_SCRIPT_ID, 'https://www.instagram.com/embed.js');
+    ensureScript(frm.document, INSTAGRAM_SCRIPT_ID, 'https://www.instagram.com/embed.js', () => {
+      setStage(EMBED_FAILED_STAGE);
+      reportError('script-missing');
+    });
     setStage(CONFIRM_SCRIPT_LOADED_STAGE);
   }, [stage, frm.document, embedDisabled]);
 

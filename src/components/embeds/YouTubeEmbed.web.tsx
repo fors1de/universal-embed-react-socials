@@ -121,6 +121,10 @@ export const YouTubeEmbed = ({
                 setReady(true);
                 youTubeProps?.onReady?.({ target: undefined });
               }}
+              onError={() => {
+                setFailed(true);
+                reportError('load-failed');
+              }}
             />
           </Box>
           )}

@@ -136,6 +136,10 @@ const TikTokPlayerEmbed = ({
               allowFullScreen
               title="TikTok embed"
               onLoad={() => setReady(true)}
+              onError={() => {
+                setFailed(true);
+                reportError('load-failed');
+              }}
             />
           </Box>
           )}
@@ -214,7 +218,10 @@ const TikTokOEmbed = ({
       frm.document.getElementById(scriptId)?.remove();
     }
     if (!scriptLoadDisabled) {
-      ensureScript(frm.document, scriptId, 'https://www.tiktok.com/embed.js');
+      ensureScript(frm.document, scriptId, 'https://www.tiktok.com/embed.js', () => {
+        setStage(EMBED_FAILED_STAGE);
+        reportError('script-missing');
+      });
     }
     setStage(CONFIRM_EMBED_SUCCESS_STAGE);
   }, [scriptLoadDisabled, stage, retryCount, frm.document, embedDisabled, embedId]);

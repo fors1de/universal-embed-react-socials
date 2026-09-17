@@ -6,6 +6,7 @@ import type {
   EmbedWebViewNavigationRequest,
   EmbedWebViewOpenWindowEvent,
 } from '../../types';
+import { EMBED_MAX_CRASH_RELOADS } from '../../utils/embedLoad';
 import { toNativeSize } from '../../utils/style';
 import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import {
@@ -113,12 +114,14 @@ export const NativeEmbedView = ({
   const hasPlaceholder = placeholder != null && !placeholderDisabled;
   const blocked = embedDisabled || (lazy && !lazyVisible);
   const lazyCheckRef = useRef(() => {});
+  const crashReloadsRef = useRef(0);
   const reportError = useEmbedOnError(onError, url);
 
   useEffect(() => {
     setReady(false);
     setMeasuredHeight(0);
     setSizeTimedOut(false);
+    crashReloadsRef.current = 0;
   }, [html, uri]);
 
   useEffect(() => {
@@ -196,6 +199,7 @@ export const NativeEmbedView = ({
     onLoad,
     onMessage,
     onError: onWebViewError,
+    onHttpError: onWebViewHttpError,
     injectedJavaScript,
     source: _source,
     onShouldStartLoadWithRequest,
@@ -318,7 +322,16 @@ export const NativeEmbedView = ({
               reportError('load-failed');
               onWebViewError?.(event);
             }}
+            onHttpError={(event: unknown) => {
+              reportError('load-failed');
+              onWebViewHttpError?.(event);
+            }}
             onContentProcessDidTerminate={() => {
+              if (crashReloadsRef.current >= EMBED_MAX_CRASH_RELOADS) {
+                reportError('load-failed');
+                return;
+              }
+              crashReloadsRef.current += 1;
               webViewRef.current?.reload();
             }}
             style={[

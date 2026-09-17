@@ -109,6 +109,10 @@ export const LinkedInEmbed = ({
             width={LINKEDIN_DESIGN_WIDTH}
             height={LINKEDIN_DESIGN_HEIGHT}
             onLoad={() => setReady(true)}
+            onError={() => {
+              setFailed(true);
+              reportError('load-failed');
+            }}
             title="LinkedIn embed"
             style={embedScaleStyle(scale, LINKEDIN_DESIGN_WIDTH)}
           />

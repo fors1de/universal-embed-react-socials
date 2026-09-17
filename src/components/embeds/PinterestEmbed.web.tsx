@@ -146,6 +146,10 @@ export const PinterestEmbed = ({
               height={frameHeight || officialEmbedHeight}
               title="Pinterest embed"
               sandbox={sandbox}
+              onError={() => {
+                setFailed(true);
+                reportError('load-failed');
+              }}
               style={{
                 width: '100%',
                 height: frameHeight || officialEmbedHeight,

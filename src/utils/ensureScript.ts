@@ -1,6 +1,11 @@
 import type { FrameDocument } from '../types';
 
-export const ensureScript = (doc: FrameDocument, id: string, src: string): unknown => {
+export const ensureScript = (
+  doc: FrameDocument,
+  id: string,
+  src: string,
+  onError?: () => void,
+): unknown => {
   const existing = doc.getElementById(id);
   if (existing) {
     return existing;
@@ -9,6 +14,9 @@ export const ensureScript = (doc: FrameDocument, id: string, src: string): unkno
   script.id = id;
   script.async = true;
   script.src = src;
+  if (onError) {
+    script.onerror = onError;
+  }
   doc.head.appendChild(script);
   return script;
 };

@@ -29,6 +29,7 @@ export interface FrameDocument {
     id: string;
     src: string;
     async: boolean;
+    onerror: (() => void) | null;
     remove(): void;
   };
 }

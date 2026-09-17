@@ -68,6 +68,7 @@ export const IFrame = ({
   className,
   style,
   onLoad,
+  onError,
   allow,
   allowFullScreen,
   title,
@@ -83,6 +84,7 @@ export const IFrame = ({
     className={className}
     style={{ display: "block", border: 0, ...style }}
     onLoad={onLoad}
+    onError={onError}
     allow={allow}
     allowFullScreen={allowFullScreen}
     title={title}
