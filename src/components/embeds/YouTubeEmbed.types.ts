@@ -1,7 +1,7 @@
 import type { CommonEmbedProps } from '../../types';
 import type { PlaceholderEmbedOptions } from '../placeholder/PlaceholderEmbed.types';
 import { playerIframeHtml } from './playerIframeHtml';
-import { toQueryString } from '../../utils/query';
+import { toQueryString } from '../../utils/parseUrl';
 
 export interface YouTubePlayerVars {
   start?: number;

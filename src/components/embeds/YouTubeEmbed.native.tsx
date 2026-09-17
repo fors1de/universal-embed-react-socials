@@ -28,7 +28,7 @@ export const YouTubeEmbed = ({
   const videoId = youTubeProps?.videoId || getYouTubeVideoId(props.url);
   const start = getYouTubeStart(props.url);
   const reportError = useEmbedOnError(onError, props.url);
-  const resolvedTitle = embedIframeTitle('YouTube', { title: iframeTitle, id: videoId, url: props.url });
+  const resolvedTitle = embedIframeTitle('YouTube', { title: iframeTitle, id: videoId });
   useEffect(() => {
     if (!videoId && !embedDisabled) {
       reportError('invalid-url');

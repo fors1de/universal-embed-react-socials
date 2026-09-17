@@ -4,7 +4,7 @@ import type { EmbedPlaceholder, EmbedStyle } from '../../types';
 import { PlaceholderEmbed } from './PlaceholderEmbed';
 import type { PlaceholderEmbedOptions } from './PlaceholderEmbed.types';
 
-export interface EmbedPlaceholderFields {
+export interface ResolveEmbedPlaceholderOptions {
   placeholder?: EmbedPlaceholder;
   placeholderText?: string;
   placeholderImageUrl?: string;
@@ -15,9 +15,6 @@ export interface EmbedPlaceholderFields {
   placeholderHeight?: string | number;
   placeholderStyle?: EmbedStyle;
   placeholderDisabled?: boolean;
-}
-
-export interface ResolveEmbedPlaceholderOptions extends EmbedPlaceholderFields {
   url?: string;
   extraStyle?: EmbedStyle;
   /** Current embed box size. Used when the user does not set a placeholder size. */
@@ -83,9 +80,7 @@ export const resolveEmbedPlaceholder = (options: ResolveEmbedPlaceholderOptions)
       return null;
     }
     return (
-      <Box style={{ ...boxStyle, overflow: 'hidden' }}>
-        <Box style={fillStyle}>{custom}</Box>
-      </Box>
+      <Box style={{ ...boxStyle, overflow: 'hidden', ...fillStyle }}>{custom}</Box>
     );
   }
 

@@ -86,13 +86,19 @@ export const PlaceholderEmbed = ({
             width: '100%',
           }}
         >
-          {typeof style?.height !== 'undefined' ? (
-            <Box style={{ width: '100%', height: '100%', marginBottom: 40 }}>
-              <EmbedImage src={imageUrl} alt={imageAlt} style={{ width: '100%', height: '100%' }} />
-            </Box>
-          ) : (
-            <Box style={{ width: '100%', marginBottom: 40 }}>
-              <EmbedImage src={imageUrl} alt={imageAlt} style={{ width: '100%' }} />
+          {imageUrl && (
+            <Box
+              style={{
+                width: '100%',
+                height: typeof style?.height !== 'undefined' ? '100%' : undefined,
+                marginBottom: 40,
+              }}
+            >
+              <EmbedImage
+                src={imageUrl}
+                alt={imageAlt}
+                style={{ width: '100%', height: typeof style?.height !== 'undefined' ? '100%' : undefined }}
+              />
             </Box>
           )}
         </Box>

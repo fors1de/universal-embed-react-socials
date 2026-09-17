@@ -13,7 +13,7 @@ import { Subs } from '../../utils/subs';
 import { getCleanInstagramUrl } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { EmbedShell } from './EmbedShell';
-import { PlaceholderOverlay } from './MediaFrame';
+import { MediaFrame } from './MediaFrame';
 import {
   INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT,
   INSTAGRAM_PLACEHOLDER_HEIGHT,
@@ -81,8 +81,7 @@ export const InstagramEmbed = ({
   const [stage, setStage] = useState(CHECK_SCRIPT_STAGE);
   const [retryCount, setRetryCount] = useState(0);
   const embedId = useId();
-  const [processTime, setProcessTime] = useState(0);
-  const embedContainerKey = `${embedId}-${cleanUrlWithEndingSlash}-${processTime}`;
+  const embedContainerKey = `${embedId}-${cleanUrlWithEndingSlash}-${retryCount}`;
   const frm = useFrame(frame);
   const reportError = useEmbedOnError(onError, url);
   const failed = stage === EMBED_FAILED_STAGE;
@@ -90,7 +89,6 @@ export const InstagramEmbed = ({
   useEffect(() => {
     setStage(CHECK_SCRIPT_STAGE);
     setRetryCount(0);
-    setProcessTime(0);
   }, [url, captioned, resolvedVersion, embedDisabled]);
 
   useEffect(() => {
@@ -192,7 +190,6 @@ export const InstagramEmbed = ({
     if (embedDisabled || stage !== RETRYING_STAGE) {
       return;
     }
-    setProcessTime(Date.now());
     setRetryCount((count) => count + 1);
     setStage(PROCESS_EMBED_STAGE);
   }, [stage, embedDisabled]);
@@ -245,9 +242,9 @@ export const InstagramEmbed = ({
       width="100%"
       height={frameHeight}
       borderRadius={borderRadius}
-      style={{ position: 'relative', ...style }}
-      busy={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}
+      style={style}
     >
+      <MediaFrame showPlaceholder={showPlaceholder} placeholder={resolvedPlaceholder}>
       <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
       {embedDisabled || !cleanUrlWithEndingSlash ? null : (
       <Box key={embedContainerKey}>
@@ -266,9 +263,7 @@ export const InstagramEmbed = ({
       </Box>
       )}
       </div>
-      <PlaceholderOverlay show={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}>
-        {resolvedPlaceholder}
-      </PlaceholderOverlay>
+      </MediaFrame>
     </EmbedShell>
     </div>
   );

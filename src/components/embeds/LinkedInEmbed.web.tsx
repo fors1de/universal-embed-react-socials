@@ -105,7 +105,7 @@ export const LinkedInEmbed = ({
         borderRadius={borderRadius}
         style={style}
       >
-        <MediaFrame showPlaceholder={showPlaceholder && !placeholderDisabled} placeholder={resolvedPlaceholder}>
+        <MediaFrame showPlaceholder={showPlaceholder} placeholder={resolvedPlaceholder}>
           {embedDisabled ? null : (
           <IFrame
             key={url}

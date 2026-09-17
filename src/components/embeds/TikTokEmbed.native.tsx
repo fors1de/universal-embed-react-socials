@@ -38,7 +38,7 @@ export const TikTokEmbed = ({
 }: TikTokEmbedProps) => {
   const videoId = getTikTokVideoId(url);
   const reportError = useEmbedOnError(onError, url);
-  const resolvedTitle = embedIframeTitle('TikTok', { title: iframeTitle, id: videoId, url });
+  const resolvedTitle = embedIframeTitle('TikTok', { title: iframeTitle, id: videoId });
   useEffect(() => {
     if (!videoId && !embedDisabled) {
       reportError('invalid-url');

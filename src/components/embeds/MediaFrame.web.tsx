@@ -37,10 +37,11 @@ export const PlaceholderOverlay = ({
   children?: ReactNode;
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(show && children != null);
+  const hasContent = children != null;
+  const [mounted, setMounted] = useState(show && hasContent);
 
   useLayoutEffect(() => {
-    if (show && children != null) {
+    if (show && hasContent) {
       setMounted(true);
       return;
     }
@@ -52,7 +53,7 @@ export const PlaceholderOverlay = ({
       restoreFocusFromOverlay(overlay);
     }
     setMounted(false);
-  }, [show, children, mounted]);
+  }, [show, hasContent, mounted]);
 
   if (!mounted || children == null) {
     return null;

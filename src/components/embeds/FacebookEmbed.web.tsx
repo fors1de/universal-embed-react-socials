@@ -7,6 +7,7 @@ import { DEFAULT_FACEBOOK_API_VERSION, DEFAULT_FACEBOOK_LOCALE } from '../../uti
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { resolveIframeSandbox, sandboxAllowsSameOrigin } from '../../utils/iframeSandbox';
 import { embedIframeTitle } from '../../utils/iframeTitle';
+import { toQueryString } from '../../utils/parseUrl';
 import { embedScaleStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { facebookEmbedHtml } from './embedHtml';
@@ -23,23 +24,20 @@ const defaultPlaceholderHeight = 372;
 const borderRadius = 3;
 const FACEBOOK_CHROME = 148;
 const FACEBOOK_CONTENT_MIN = 240;
-const SDK_FALLBACK_MS = 8000;
 
 const clampFacebookWidth = (width: number) => Math.min(maxPluginWidth, Math.max(minPluginWidth, width));
 
 const facebookPluginHeight = (width: number): number =>
   Math.max(defaultPlaceholderHeight, Math.round(width * (9 / 16) + FACEBOOK_CHROME));
 
-const buildFacebookPluginSrc = (url: string, width: number, height: number, locale: string) => {
-  const params = new URLSearchParams({
+const buildFacebookPluginSrc = (url: string, width: number, height: number, locale: string) =>
+  `https://www.facebook.com/plugins/post.php?${toQueryString({
     href: url,
-    show_text: 'true',
-    width: String(width),
-    height: String(height),
+    show_text: true,
+    width,
+    height,
     locale,
-  });
-  return `https://www.facebook.com/plugins/post.php?${params.toString()}`;
-};
+  })}`;
 
 export const FacebookEmbed = ({
   url,
@@ -136,7 +134,7 @@ export const FacebookEmbed = ({
     if (embedDisabled || isolateBlob || !autoHeight || ready || usePluginFallback) {
       return;
     }
-    const timer = window.setTimeout(() => setUsePluginFallback(true), SDK_FALLBACK_MS);
+    const timer = window.setTimeout(() => setUsePluginFallback(true), EMBED_GIVE_UP_MS);
     return () => window.clearTimeout(timer);
   }, [autoHeight, ready, embedDisabled, isolateBlob, usePluginFallback]);
 

@@ -1,5 +1,6 @@
 import { AUTO_HEIGHT_TOPIC } from "./nativeEmbedHeight";
 import { getFacebookSdkSrc } from "../../utils/apiVersion";
+import { embedIframeTitle } from "../../utils/iframeTitle";
 import { escapeHtmlAttribute } from "../../utils/urls";
 
 const documentShell = (body: string): string => `<!DOCTYPE html>
@@ -150,7 +151,13 @@ export const xEmbedHtml = ({ postId }: { postId: string }): string =>
 export const LINKEDIN_DESIGN_WIDTH = 504;
 export const LINKEDIN_DESIGN_HEIGHT = 570;
 
-export const linkedinEmbedHtml = ({ url, title = 'LinkedIn embed' }: { url: string; title?: string }): string =>
+export const linkedinEmbedHtml = ({
+  url,
+  title = embedIframeTitle('LinkedIn'),
+}: {
+  url: string;
+  title?: string;
+}): string =>
   documentShell(`
     <style>
       html,body{width:100%;margin:0;padding:0;overflow:hidden;background:transparent;}

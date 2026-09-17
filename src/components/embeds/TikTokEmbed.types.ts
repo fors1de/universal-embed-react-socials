@@ -1,7 +1,7 @@
 import type { CommonEmbedProps, Frame } from '../../types';
 import type { PlaceholderEmbedOptions } from '../placeholder/PlaceholderEmbed.types';
 import { playerIframeHtml } from './playerIframeHtml';
-import { toQueryString } from '../../utils/query';
+import { toQueryString } from '../../utils/parseUrl';
 
 /** Official Embed Player query flags. https://developers.tiktok.com/doc/embed-player */
 export type TikTokPlayerFlag = 0 | 1;
@@ -64,5 +64,5 @@ export const buildTikTokPlayerHtml = (src: string, title?: string): string =>
   playerIframeHtml({
     src,
     allow: 'fullscreen; autoplay; encrypted-media',
-    title: title ?? 'TikTok embed',
+    title,
   });

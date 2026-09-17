@@ -6,7 +6,7 @@ import type {
   EmbedWebViewNavigationRequest,
   EmbedWebViewOpenWindowEvent,
 } from '../../types';
-import { EMBED_MAX_CRASH_RELOADS } from '../../utils/embedLoad';
+import { EMBED_GIVE_UP_MS, EMBED_MAX_CRASH_RELOADS } from '../../utils/embedLoad';
 import { takeMeasuredHeight } from '../../utils/embedHeight';
 import { toNativeSize } from '../../utils/style';
 import { useEmbedOnError } from '../../hooks/useEmbedOnError';
@@ -25,20 +25,26 @@ const isHttpUrl = (url: string): boolean => /^https?:\/\//i.test(url);
 
 const normalizeUrl = (url: string): string => url.replace(/\/$/, '').split('#')[0];
 
-const isEmbedHostPath = (url: string, host: string, path: string): boolean => {
-  const parsed = parseUrl(url);
-  return parsed != null && parsed.hostname.endsWith(host) && parsed.pathname.includes(path);
-};
+const PROVIDER_EMBED_PATHS: ReadonlyArray<readonly [string, string]> = [
+  ['tiktok.com', '/embed'],
+  ['tiktok.com', '/player'],
+  ['facebook.com', '/plugins'],
+  ['linkedin.com', '/embed'],
+  ['instagram.com', '/embed'],
+  ['pinterest.com', '/embed'],
+  ['youtube.com', '/embed'],
+  ['youtube-nocookie.com', '/embed'],
+];
 
-const isProviderEmbedUrl = (url: string): boolean =>
-  isEmbedHostPath(url, 'tiktok.com', '/embed') ||
-  isEmbedHostPath(url, 'tiktok.com', '/player') ||
-  isEmbedHostPath(url, 'facebook.com', '/plugins') ||
-  isEmbedHostPath(url, 'linkedin.com', '/embed') ||
-  isEmbedHostPath(url, 'instagram.com', '/embed') ||
-  isEmbedHostPath(url, 'pinterest.com', '/embed') ||
-  isEmbedHostPath(url, 'youtube.com', '/embed') ||
-  isEmbedHostPath(url, 'youtube-nocookie.com', '/embed');
+const isProviderEmbedUrl = (url: string): boolean => {
+  const parsed = parseUrl(url);
+  return (
+    parsed != null &&
+    PROVIDER_EMBED_PATHS.some(
+      ([host, path]) => parsed.hostname.endsWith(host) && parsed.pathname.includes(path),
+    )
+  );
+};
 
 const isEmbedDocumentUrl = (url: string, uri?: string, baseUrl?: string): boolean => {
   if (!url || url === 'about:blank' || url.startsWith('data:') || url.startsWith('blob:')) {
@@ -191,7 +197,7 @@ export const NativeEmbedView = ({
     if (!waitingForSize || !ready) {
       return;
     }
-    const id = setTimeout(() => setSizeTimedOut(true), 8000);
+    const id = setTimeout(() => setSizeTimedOut(true), EMBED_GIVE_UP_MS);
     return () => clearTimeout(id);
   }, [ready, waitingForSize]);
   const useAspectRatio = aspectRatio != null && height == null && !autoHeightEnabled;

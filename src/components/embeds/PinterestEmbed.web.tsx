@@ -6,6 +6,7 @@ import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { resolveIframeSandbox } from '../../utils/iframeSandbox';
 import { embedIframeTitle } from '../../utils/iframeTitle';
 import { embedMaxWidthStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
+import { getPinterestPinId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { pinterestEmbedHtml } from './embedHtml';
 import { EmbedShell } from './EmbedShell';
@@ -142,14 +143,14 @@ export const PinterestEmbed = ({
         borderRadius={borderRadius}
         style={style}
       >
-        <MediaFrame showPlaceholder={!ready && !placeholderDisabled} placeholder={resolvedPlaceholder}>
+        <MediaFrame showPlaceholder={!ready} placeholder={resolvedPlaceholder}>
           {embedDisabled || !frameSrc ? null : (
             <IFrame
               key={postHref}
               src={frameSrc}
               width="100%"
               height={frameHeight || officialEmbedHeight}
-              title={embedIframeTitle('Pinterest', { title: iframeTitle, url: postHref })}
+              title={embedIframeTitle('Pinterest', { title: iframeTitle, id: getPinterestPinId(postHref), url: postHref })}
               sandbox={sandbox}
               onError={() => {
                 setFailed(true);

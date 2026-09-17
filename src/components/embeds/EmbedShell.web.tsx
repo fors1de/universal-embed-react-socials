@@ -15,7 +15,6 @@ export interface EmbedShellProps {
   children?: ReactNode;
   id?: string;
   testID?: string;
-  busy?: boolean;
 }
 
 export const EmbedShell = ({
@@ -28,14 +27,12 @@ export const EmbedShell = ({
   children,
   id,
   testID,
-  busy,
 }: EmbedShellProps) => (
   <Box
     id={id}
     testID={testID}
     className={classNames("rsme-embed", extraClassName, className)}
     style={boxSizeStyle(width, height, { borderRadius, ...(style as CSSProperties) })}
-    aria-busy={busy || undefined}
   >
     <EmbedStyle />
     {children}

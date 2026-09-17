@@ -80,3 +80,13 @@ export const parseUrl = (value: string): ParsedUrl | undefined => {
 
 export const hrefWithoutQuery = (url: ParsedUrl): string =>
   `${url.protocol}//${url.hostname}${url.pathname}`;
+
+export const toQueryString = (params: object): string => {
+  const parts: string[] = [];
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
+    }
+  });
+  return parts.join('&');
+};

@@ -11,7 +11,7 @@ import { Subs } from '../../utils/subs';
 import { getXPostId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { EmbedShell } from './EmbedShell';
-import { PlaceholderOverlay } from './MediaFrame';
+import { MediaFrame } from './MediaFrame';
 import type { XEmbedProps } from './XEmbed.types';
 
 export type { TwitterTweetEmbedProps, XEmbedProps } from './XEmbed.types';
@@ -159,9 +159,9 @@ export const XEmbed = ({
         width="100%"
         height={frameHeight}
         borderRadius={borderRadius}
-        style={{ position: 'relative', ...style }}
-        busy={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}
+        style={style}
       >
+        <MediaFrame showPlaceholder={showPlaceholder} placeholder={resolvedPlaceholder}>
         <div ref={containerRef} style={{ width: '100%' }}>
           {embedDisabled || !postId ? null : (
             <Box id={embedId} key={postId}>
@@ -171,9 +171,7 @@ export const XEmbed = ({
             </Box>
           )}
         </div>
-        <PlaceholderOverlay show={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}>
-          {resolvedPlaceholder}
-        </PlaceholderOverlay>
+        </MediaFrame>
       </EmbedShell>
     </div>
   );

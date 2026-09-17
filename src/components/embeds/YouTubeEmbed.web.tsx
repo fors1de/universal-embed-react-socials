@@ -131,7 +131,7 @@ export const YouTubeEmbed = ({
               height="100%"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              title={embedIframeTitle('YouTube', { title: iframeTitle, id: videoId, url })}
+              title={embedIframeTitle('YouTube', { title: iframeTitle, id: videoId })}
               onLoad={() => {
                 setReady(true);
               }}
