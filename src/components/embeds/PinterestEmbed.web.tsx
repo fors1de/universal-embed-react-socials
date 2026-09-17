@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { IFrame } from '../../host';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
+import { resolveIframeSandbox } from '../../utils/iframeSandbox';
 import { embedMaxWidthStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { pinterestEmbedHtml } from './embedHtml';
@@ -31,10 +32,12 @@ export const PinterestEmbed = ({
   placeholderDisabled = false,
   embedDisabled: embedDisabledProp = false,
   lazy = false,
+  iframeSandbox,
   className,
   style,
 }: PinterestEmbedProps) => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
+  const sandbox = resolveIframeSandbox(iframeSandbox);
   const embedId = useId();
   const postHref = postUrl ?? url;
   const embedHtml = useMemo(
@@ -64,6 +67,9 @@ export const PinterestEmbed = ({
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin && event.origin !== 'null') {
+        return;
+      }
       const data = event.data as { source?: string; id?: string; height?: number } | null;
       if (!data || data.source !== 'rsme-pinterest' || data.id !== embedId) {
         return;
@@ -133,6 +139,7 @@ export const PinterestEmbed = ({
               width="100%"
               height={frameHeight || officialEmbedHeight}
               title="Pinterest embed"
+              sandbox={sandbox}
               style={{
                 width: '100%',
                 height: frameHeight || officialEmbedHeight,

@@ -74,4 +74,12 @@ export interface CommonEmbedProps extends EmbedContainerProps {
    * Defaults to `true`. Ignored on web.
    */
   openLinksInBrowser?: boolean;
+  /**
+   * Web only. Facebook and Pinterest load provider HTML in a `blob:` iframe that
+   * inherits this page's origin (cookies, `localStorage`, `parent.document`).
+   * `true` applies a restrictive sandbox without `allow-same-origin`. Facebook
+   * then uses the official plugin iframe; Pinterest keeps the blob iframe and
+   * sizes via `postMessage`. Pass a string for custom sandbox tokens.
+   */
+  iframeSandbox?: boolean | string;
 }

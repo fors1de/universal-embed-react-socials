@@ -18,6 +18,7 @@ export type {
   Frame,
 } from './types';
 export { DEFAULT_WEB_EMBED_WIDTH } from './utils/style';
+export { DEFAULT_IFRAME_SANDBOX } from './utils/iframeSandbox';
 export {
   DEFAULT_FACEBOOK_API_VERSION,
   DEFAULT_FACEBOOK_LOCALE,

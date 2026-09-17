@@ -3,6 +3,7 @@ import { IFrame } from '../../host';
 import { useAutoEmbedHeight, useResponsiveEmbedBox } from '../../hooks/useEmbedHeight';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { DEFAULT_FACEBOOK_API_VERSION, DEFAULT_FACEBOOK_LOCALE } from '../../utils/apiVersion';
+import { resolveIframeSandbox, sandboxAllowsSameOrigin } from '../../utils/iframeSandbox';
 import { embedScaleStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { facebookEmbedHtml } from './embedHtml';
@@ -55,6 +56,7 @@ export const FacebookEmbed = ({
   lazy = false,
   apiVersion = DEFAULT_FACEBOOK_API_VERSION,
   locale = DEFAULT_FACEBOOK_LOCALE,
+  iframeSandbox,
   className,
   style,
 }: FacebookEmbedProps) => {
@@ -67,7 +69,9 @@ export const FacebookEmbed = ({
       : clampFacebookWidth(resolvedMaxWidth);
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(pluginWidth, resolvedMaxWidth);
   const { disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy, boxRef);
-  const [usePluginFallback, setUsePluginFallback] = useState(false);
+  const sandbox = resolveIframeSandbox(iframeSandbox);
+  const isolateBlob = sandbox != null && !sandboxAllowsSameOrigin(sandbox);
+  const [usePluginFallback, setUsePluginFallback] = useState(isolateBlob);
   const [pluginReady, setPluginReady] = useState(false);
   const embedHtml = useMemo(
     () => facebookEmbedHtml({ url, width: pluginWidth, apiVersion, locale }),
@@ -89,23 +93,28 @@ export const FacebookEmbed = ({
   useEffect(() => {
     if (embedDisabled) {
       setFrameSrc(undefined);
-      setUsePluginFallback(false);
+      setUsePluginFallback(isolateBlob);
       setPluginReady(false);
+      return;
+    }
+    if (isolateBlob) {
+      setFrameSrc(undefined);
+      setUsePluginFallback(true);
       return;
     }
     const blob = new Blob([embedHtml], { type: 'text/html' });
     const next = URL.createObjectURL(blob);
     setFrameSrc(next);
     return () => URL.revokeObjectURL(next);
-  }, [embedHtml, embedDisabled]);
+  }, [embedHtml, embedDisabled, isolateBlob]);
 
   useEffect(() => {
-    if (embedDisabled || !autoHeight || ready || usePluginFallback) {
+    if (embedDisabled || isolateBlob || !autoHeight || ready || usePluginFallback) {
       return;
     }
     const timer = window.setTimeout(() => setUsePluginFallback(true), SDK_FALLBACK_MS);
     return () => window.clearTimeout(timer);
-  }, [autoHeight, ready, embedDisabled, usePluginFallback]);
+  }, [autoHeight, ready, embedDisabled, isolateBlob, usePluginFallback]);
 
   const frameHeight =
     typeof height === 'number' ? height : (contentHeight ?? fallbackHeight);
@@ -169,6 +178,7 @@ export const FacebookEmbed = ({
               iframeRef={iframeRef}
               src={frameSrc}
               height={frameHeight}
+              sandbox={sandbox}
               {...facebookFrameProps}
             />
           ) : null}

@@ -163,6 +163,7 @@ Every embed accepts:
 - `className` / `style`
 - `webViewProps` (React Native only)
 - `openLinksInBrowser` (React Native only) — open tapped embed links in the system browser. Defaults to `true`. Ignored on web.
+- `iframeSandbox` (web only) — opt-in iframe `sandbox` for Facebook and Pinterest `blob:` embeds. See [Trust boundaries](#trust-boundaries).
 
 ```jsx
 <InstagramEmbed
@@ -183,6 +184,32 @@ Opt in to near-viewport loading with `lazy` (default is off, so embeds still loa
 ```
 
 Instagram and TikTok also support `scriptLoadDisabled`, `retryDelay`, `retryDisabled`, `frame`, and `debug`.
+
+## Trust boundaries
+
+Facebook and Pinterest on web load provider HTML through a `blob:` iframe so the library can measure height (`contentDocument` on Facebook; `postMessage` on Pinterest). A `blob:` URL inherits **this page's origin**, so those provider scripts can read `document.cookie`, `localStorage`, and `parent.document`. Official `facebook.com` / `pinterest.com` iframes cannot.
+
+This is unchanged by default so auto-height keeps working. Opt into a restrictive sandbox (no `allow-same-origin`) when the host page has credentials the widget should not see:
+
+```jsx
+<FacebookEmbed
+  url="https://www.facebook.com/andrewismusic/posts/451971596293956"
+  iframeSandbox
+/>
+
+<PinterestEmbed
+  url="https://www.pinterest.com/pin/99360735500167749/"
+  iframeSandbox
+/>
+```
+
+`iframeSandbox` (or a custom token string) applies only to those blob iframes. Facebook then uses the official plugin iframe instead. Pinterest keeps the blob iframe; height still arrives via `postMessage`.
+
+Instagram, TikTok (oEmbed card), and X inject the provider script into **the host document**, which is also same-origin with your app. YouTube, LinkedIn, and the TikTok player use cross-origin `https:` iframes.
+
+On React Native, embeds run in a WebView. Tapped links open in the system browser by default (`openLinksInBrowser`).
+
+Report vulnerabilities privately — see [SECURITY.md](./SECURITY.md). Do not file them on the public issue tracker.
 
 ## API version helpers
 

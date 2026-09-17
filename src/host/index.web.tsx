@@ -72,6 +72,7 @@ export const IFrame = ({
   allowFullScreen,
   title,
   iframeRef,
+  sandbox,
 }: IFrameProps) => (
   <iframe
     ref={iframeRef as Ref<HTMLIFrameElement>}
@@ -85,6 +86,7 @@ export const IFrame = ({
     allow={allow}
     allowFullScreen={allowFullScreen}
     title={title}
+    sandbox={sandbox}
   />
 );
 
