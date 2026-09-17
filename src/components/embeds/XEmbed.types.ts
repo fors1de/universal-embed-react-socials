@@ -1,5 +1,5 @@
 import type { CommonEmbedProps } from '../../types';
-import type { PlaceholderEmbedProps } from '../placeholder/PlaceholderEmbed.types';
+import type { PlaceholderEmbedOptions } from '../placeholder/PlaceholderEmbed.types';
 
 export interface TwitterTweetEmbedProps {
   tweetId?: string;
@@ -7,6 +7,6 @@ export interface TwitterTweetEmbedProps {
 }
 
 export interface XEmbedProps extends CommonEmbedProps {
-  placeholderProps?: PlaceholderEmbedProps;
+  placeholderProps?: PlaceholderEmbedOptions;
   twitterTweetEmbedProps?: TwitterTweetEmbedProps;
 }

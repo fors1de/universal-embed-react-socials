@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { IFrame } from '../../host';
 import { useResponsiveEmbedBox } from '../../hooks/useEmbedHeight';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
+import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { embedScaleStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { LINKEDIN_DESIGN_HEIGHT, LINKEDIN_DESIGN_WIDTH } from './embedHtml';
@@ -30,27 +33,35 @@ export const LinkedInEmbed = ({
   placeholderDisabled = false,
   embedDisabled: embedDisabledProp = false,
   lazy = false,
+  onError,
+  iframeTitle,
   className,
   style,
+  id,
+  testID,
 }: LinkedInEmbedProps) => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(LINKEDIN_DESIGN_WIDTH, resolvedMaxWidth);
   const { disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy, boxRef);
+  const reportError = useEmbedOnError(onError, url);
   const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (embedDisabled) {
-      setReady(false);
-    }
-  }, [embedDisabled]);
-  const { frameHeight: shellHeight, showPlaceholder } = resolveEmbedFrame({
-    ready: !embedDisabled && ready,
-    fallbackHeight: LINKEDIN_DESIGN_HEIGHT,
-    scale,
-    height,
-    waitForMeasure: false,
-  });
+    setReady(false);
+    setFailed(false);
+  }, [url, embedDisabled]);
 
+  useEffect(() => {
+    if (embedDisabled || ready) {
+      return;
+    }
+    const id = window.setTimeout(() => {
+      setFailed(true);
+      reportError('timeout');
+    }, EMBED_GIVE_UP_MS);
+    return () => window.clearTimeout(id);
+  }, [url, embedDisabled, ready]);
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url: postUrl ?? url,
     placeholderText,
@@ -58,7 +69,7 @@ export const LinkedInEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,
@@ -74,10 +85,19 @@ export const LinkedInEmbed = ({
     providerWidth: LINKEDIN_DESIGN_WIDTH,
     providerHeight: LINKEDIN_DESIGN_HEIGHT,
   });
+  const { frameHeight: shellHeight, showPlaceholder } = resolveEmbedFrame({
+    ready: !embedDisabled && ready,
+    fallbackHeight: resolvedPlaceholder != null ? LINKEDIN_DESIGN_HEIGHT : 0,
+    scale,
+    height,
+    waitForMeasure: false,
+  });
 
   return (
     <div ref={boxRef} style={boxStyle}>
       <EmbedShell
+        id={id}
+        testID={testID}
         className={className}
         extraClassName="rsme-linkedin-embed"
         width="100%"
@@ -85,15 +105,20 @@ export const LinkedInEmbed = ({
         borderRadius={borderRadius}
         style={style}
       >
-        <MediaFrame showPlaceholder={showPlaceholder && !placeholderDisabled} placeholder={resolvedPlaceholder}>
+        <MediaFrame showPlaceholder={showPlaceholder} placeholder={resolvedPlaceholder}>
           {embedDisabled ? null : (
           <IFrame
+            key={url}
             className="linkedin-post"
             src={url}
             width={LINKEDIN_DESIGN_WIDTH}
             height={LINKEDIN_DESIGN_HEIGHT}
             onLoad={() => setReady(true)}
-            title="LinkedIn embed"
+            onError={() => {
+              setFailed(true);
+              reportError('load-failed');
+            }}
+            title={embedIframeTitle('LinkedIn', { title: iframeTitle, url: postUrl ?? url })}
             style={embedScaleStyle(scale, LINKEDIN_DESIGN_WIDTH)}
           />
           )}

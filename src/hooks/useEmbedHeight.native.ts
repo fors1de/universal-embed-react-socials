@@ -1,4 +1,4 @@
-export const parseEmbedHeight = (_data: unknown): number | undefined => undefined;
+export { parseEmbedHeight } from '../utils/embedHeight';
 
 export const useResponsiveEmbedScale = (
   designWidth: number,
@@ -20,13 +20,17 @@ export const useResponsiveEmbedBox = (
   boxStyle: { width: maxWidth ?? designWidth, maxWidth: '100%' },
 });
 
+/**
+ * Web only. Native auto-height is handled inside the embed WebView;
+ * this hook does not observe native layout.
+ */
 export const useAutoEmbedHeight = ({
   fallback,
 }: {
   enabled?: boolean;
   fallback?: number;
   measureSrcDoc?: boolean;
-  measureSelector?: string;
+  resetKey?: string | number;
 } = {}) => ({
   height: fallback,
   measured: undefined as number | undefined,

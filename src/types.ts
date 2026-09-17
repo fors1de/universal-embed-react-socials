@@ -8,17 +8,43 @@ export type {
   EmbedWebViewProps,
 } from "./webviewProps";
 
+/** Why the embed gave up. Iframe embeds often still fire load for a deleted post. */
+export type EmbedErrorReason = 'timeout' | 'script-missing' | 'unavailable' | 'load-failed' | 'invalid-url';
+
+export interface EmbedError {
+  url: string;
+  reason: EmbedErrorReason;
+}
+
 /** Custom loading UI, or a render function. Return `null` to reserve no space. */
 export type EmbedPlaceholder = ReactNode | (() => ReactNode);
 
+/** Web `CSSProperties`, or a React Native style object. */
+export type EmbedStyle = CSSProperties | Record<string, unknown>;
+
+/** Browser realm for provider scripts. Structural so RN typecheck can run without DOM libs. */
+export interface FrameDocument {
+  getElementById(id: string): { querySelector(selectors: string): unknown; remove(): void } | null;
+  querySelector(selectors: string): unknown;
+  head: { appendChild(node: unknown): unknown };
+  createElement(tagName: string): {
+    setAttribute(name: string, value: string): void;
+    id: string;
+    src: string;
+    async: boolean;
+    onerror: (() => void) | null;
+    remove(): void;
+  };
+}
+
 export interface Frame {
-  window?: Window;
-  document?: Document;
+  window?: typeof globalThis & Record<string, unknown>;
+  document?: FrameDocument;
 }
 
 export interface EmbedContainerProps {
   className?: string;
-  style?: CSSProperties;
+  style?: EmbedStyle;
   children?: ReactNode;
   id?: string;
   testID?: string;
@@ -41,7 +67,7 @@ export interface CommonEmbedProps extends EmbedContainerProps {
   placeholderWidth?: string | number;
   /** Height of the placeholder box. Defaults to the embed height, then the provider default. */
   placeholderHeight?: string | number;
-  placeholderStyle?: CSSProperties;
+  placeholderStyle?: EmbedStyle;
   placeholderDisabled?: boolean;
   /**
    * When true, keep the placeholder and do not load the live embed
@@ -60,4 +86,19 @@ export interface CommonEmbedProps extends EmbedContainerProps {
    * Defaults to `true`. Ignored on web.
    */
   openLinksInBrowser?: boolean;
+  /**
+   * Accessible name for the embed iframe (web) or WebView (React Native).
+   * Defaults to `{provider} embed {id}` so multiple embeds on one page stay unique.
+   */
+  iframeTitle?: string;
+  /**
+   * Web only. Facebook and Pinterest load provider HTML in a `blob:` iframe that
+   * inherits this page's origin (cookies, `localStorage`, `parent.document`).
+   * `true` applies a restrictive sandbox without `allow-same-origin`. Facebook
+   * then uses the official plugin iframe; Pinterest keeps the blob iframe and
+   * sizes via `postMessage`. Pass a string for custom sandbox tokens.
+   */
+  iframeSandbox?: boolean | string;
+  /** Called once when the embed cannot load. Identity is not used as a reset key. */
+  onError?: (error: EmbedError) => void;
 }

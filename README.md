@@ -16,6 +16,8 @@ React Native also needs:
 npm i react-native-webview
 ```
 
+TikTok in-app link handling parses URLs without `URL.searchParams`, so `react-native-url-polyfill` is not required.
+
 ## Usage
 
 On web, embeds are `width: 100%` of their container by default. Pass `maxWidth` only when you want a cap.
@@ -106,6 +108,8 @@ import { XEmbed } from "@fors1de/universal-embed-react-socials";
 <XEmbed url="https://twitter.com/PixelAndBracket/status/1356633038717923333" />;
 ```
 
+X's official widget is 550px wide. A numeric `maxWidth` is capped at 550; a percentage or CSS length (`"50%"`, `"400px"`) is used as given.
+
 `TwitterEmbed` is still exported as a deprecated alias of `XEmbed`.
 
 ### YouTube
@@ -116,7 +120,7 @@ import { YouTubeEmbed } from "@fors1de/universal-embed-react-socials";
 <YouTubeEmbed url="https://www.youtube.com/watch?v=HpVOs5imUN0" />;
 ```
 
-Shorts (`youtube.com/shorts/ID`) and `youtu.be` links work. Extra player options go through `youTubeProps.opts.playerVars`.
+Shorts (`youtube.com/shorts/ID`) and `youtu.be` links work. Extra player options go through `youTubeProps.opts.playerVars`. Start time is read from `start=` or `t=` (`90`, `90s`, `1m30s`).
 
 ## React vs React Native
 
@@ -133,7 +137,7 @@ On React Native, tapped embed links open in the system browser by default. Pass 
 />
 ```
 
-Pass extra `react-native-webview` options with `webViewProps` (ignored on web):
+Pass extra `react-native-webview` options with `webViewProps` (ignored on web). `source` is owned by the embed. Navigation, open-window, load, error, and crash-recovery handlers are composed so your callback still runs. `setSupportMultipleWindows` defaults from `openLinksInBrowser` when omitted.
 
 ```jsx
 <FacebookEmbed
@@ -154,15 +158,30 @@ Every embed accepts:
 - `url`
 - `maxWidth` / `height` — On web, omit `maxWidth` to fill the container (`100%`). Pass a pixel or percent value to cap it. Omit `height` to size the embed from the platform when it reports it.
 - `placeholderText` — text on the default placeholder.
-- `placeholder` — custom loading UI. Replaces the default placeholder.
+- `placeholder` — custom loading UI. Replaces the default placeholder. Pass `null` or `() => null` to render nothing and reserve no height until the embed is ready.
 - `placeholderWidth` / `placeholderHeight` / `placeholderStyle` — optional overrides. By default the placeholder matches the embed size, or the provider’s default size before the embed has measured.
 - `placeholderImageUrl` / `placeholderSpinner` / `placeholderSpinnerDisabled` / `placeholderProps`
+- `placeholderProps.imageAlt` — alt text for `placeholderImageUrl`. Defaults to empty (decorative); the placeholder control is named by `placeholderText`.
+- `iframeTitle` — accessible name for the embed iframe (web) or WebView (React Native). Defaults to `{provider} embed {id}` so two YouTube embeds on one page are not both named “YouTube embed”.
 - `placeholderDisabled` — hide the placeholder.
 - `embedDisabled` — keep the placeholder and do not load the live embed (iframe, WebView, or provider scripts) until this is `false`.
 - `lazy` — wait until the embed is near the viewport before loading provider scripts or a WebView. Default `false` (load immediately, same as before).
 - `className` / `style`
+- `id` / `testID` — forwarded to the embed root (`data-testid` on web, `testID` / `nativeID` on React Native).
 - `webViewProps` (React Native only)
 - `openLinksInBrowser` (React Native only) — open tapped embed links in the system browser. Defaults to `true`. Ignored on web.
+- `iframeSandbox` (web only) — opt-in iframe `sandbox` for Facebook and Pinterest `blob:` embeds. See [Trust boundaries](#trust-boundaries).
+- `onError` — called once if the embed cannot load (`timeout`, `script-missing`, `unavailable`, `invalid-url`, or native `load-failed`). Deleted iframe posts often still load an error page, so they may not fire.
+
+Provider-specific:
+
+- `postUrl` — LinkedIn and Pinterest. Canonical post URL used as the placeholder target when it differs from the embed `url`.
+- `captioned` — Instagram. Request the captioned embed layout.
+- `apiVersion` — Facebook Graph / JS SDK version, or Instagram `data-instgrm-version`.
+- `locale` — Facebook SDK locale (for example `en_US`).
+- `allowsFullscreenVideo` — TikTok. Use the Embed Player so fullscreen stays in-app. Also accepted on native WebViews.
+
+`parseEmbedHeight` works on web and native. `useAutoEmbedHeight` is web-only; on React Native it is a no-op because auto-height is handled inside the embed WebView.
 
 ```jsx
 <InstagramEmbed
@@ -182,7 +201,33 @@ Opt in to near-viewport loading with `lazy` (default is off, so embeds still loa
 />
 ```
 
-Instagram and TikTok also support `scriptLoadDisabled`, `retryDelay`, `retryDisabled`, `frame`, and `debug`.
+Instagram and TikTok on **web** also support `scriptLoadDisabled`, `retryDelay`, `retryDisabled`, `frame`, and `debug`. Those props are ignored on React Native.
+
+## Trust boundaries
+
+Facebook and Pinterest on web load provider HTML through a `blob:` iframe so the library can measure height (`contentDocument` on Facebook; `postMessage` on Pinterest). A `blob:` URL inherits **this page's origin**, so those provider scripts can read `document.cookie`, `localStorage`, and `parent.document`. Official `facebook.com` / `pinterest.com` iframes cannot.
+
+This is unchanged by default so auto-height keeps working. Opt into a restrictive sandbox (no `allow-same-origin`) when the host page has credentials the widget should not see:
+
+```jsx
+<FacebookEmbed
+  url="https://www.facebook.com/andrewismusic/posts/451971596293956"
+  iframeSandbox
+/>
+
+<PinterestEmbed
+  url="https://www.pinterest.com/pin/99360735500167749/"
+  iframeSandbox
+/>
+```
+
+`iframeSandbox` (or a custom token string) applies only to those blob iframes. Facebook then uses the official plugin iframe instead. Pinterest keeps the blob iframe; height still arrives via `postMessage`.
+
+Instagram, TikTok (oEmbed card), and X inject the provider script into **the host document**, which is also same-origin with your app. YouTube, LinkedIn, and the TikTok player use cross-origin `https:` iframes.
+
+On React Native, embeds run in a WebView. Tapped links open in the system browser by default (`openLinksInBrowser`).
+
+Report vulnerabilities privately — see [SECURITY.md](./SECURITY.md). Do not file them on the public issue tracker.
 
 ## API version helpers
 

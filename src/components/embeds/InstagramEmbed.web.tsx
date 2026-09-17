@@ -3,24 +3,29 @@ import { Box } from '../../host';
 import { useAutoEmbedHeight, useResponsiveEmbedBox } from '../../hooks/useEmbedHeight';
 import { useFrame } from '../../hooks/useFrame';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { DEFAULT_INSTAGRAM_API_VERSION, normalizeInstagramApiVersion } from '../../utils/apiVersion';
 import { classNames } from '../../utils/classNames';
+import { EMBED_FAILED_STAGE, EMBED_MAX_RETRIES } from '../../utils/embedLoad';
 import { ensureScript } from '../../utils/ensureScript';
-import { embedScaleStyle, placeholderOverlayStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
+import { embedScaleStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
 import { Subs } from '../../utils/subs';
 import { getCleanInstagramUrl } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { EmbedShell } from './EmbedShell';
+import { MediaFrame } from './MediaFrame';
 import {
   INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT,
   INSTAGRAM_PLACEHOLDER_HEIGHT,
   type InstagramEmbedProps,
+  type InstagramEmbedWebProps,
 } from './InstagramEmbed.types';
 
 export {
   INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT,
   INSTAGRAM_PLACEHOLDER_HEIGHT,
   type InstagramEmbedProps,
+  type InstagramEmbedWebProps,
 };
 
 const officialEmbedWidth = 550;
@@ -35,8 +40,8 @@ const CONFIRM_EMBED_SUCCESS_STAGE = 'confirm-embed-success';
 const RETRYING_STAGE = 'retrying';
 const EMBED_SUCCESS_STAGE = 'embed-success';
 
-const instagramProcess = (win?: Window) =>
-  (win as Window & { instgrm?: { Embeds?: { process?: () => void } } } | undefined)?.instgrm?.Embeds
+const instagramProcess = (win?: object) =>
+  (win as { instgrm?: { Embeds?: { process?: () => void } } } | undefined)?.instgrm?.Embeds
     ?.process;
 
 export const InstagramEmbed = ({
@@ -62,18 +67,29 @@ export const InstagramEmbed = ({
   apiVersion = DEFAULT_INSTAGRAM_API_VERSION,
   frame = undefined,
   debug = false,
+  onError,
   className,
   style,
-}: InstagramEmbedProps): ReactElement => {
+  id,
+  testID,
+}: InstagramEmbedProps & InstagramEmbedWebProps): ReactElement => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(officialEmbedWidth, resolvedMaxWidth);
   const { disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy, boxRef);
   const resolvedVersion = normalizeInstagramApiVersion(apiVersion);
+  const cleanUrlWithEndingSlash = getCleanInstagramUrl(url);
   const [stage, setStage] = useState(CHECK_SCRIPT_STAGE);
+  const [retryCount, setRetryCount] = useState(0);
   const embedId = useId();
-  const [processTime, setProcessTime] = useState(0);
-  const embedContainerKey = `${embedId}-${processTime}`;
+  const embedContainerKey = `${embedId}-${cleanUrlWithEndingSlash}-${retryCount}`;
   const frm = useFrame(frame);
+  const reportError = useEmbedOnError(onError, url);
+  const failed = stage === EMBED_FAILED_STAGE;
+
+  useEffect(() => {
+    setStage(CHECK_SCRIPT_STAGE);
+    setRetryCount(0);
+  }, [url, captioned, resolvedVersion, embedDisabled]);
 
   useEffect(() => {
     if (embedDisabled) {
@@ -86,12 +102,19 @@ export const InstagramEmbed = ({
     if (embedDisabled || stage !== CHECK_SCRIPT_STAGE) {
       return;
     }
+    if (!cleanUrlWithEndingSlash) {
+      setStage(EMBED_FAILED_STAGE);
+      reportError('invalid-url');
+      return;
+    }
     if (instagramProcess(frm.window)) {
       setStage(PROCESS_EMBED_STAGE);
     } else if (!scriptLoadDisabled) {
       setStage(LOAD_SCRIPT_STAGE);
     } else {
       console.error('Instagram embed script not found. Unable to process Instagram embed:', url);
+      setStage(EMBED_FAILED_STAGE);
+      reportError('script-missing');
     }
   }, [scriptLoadDisabled, stage, url, frm.window, embedDisabled]);
 
@@ -99,7 +122,10 @@ export const InstagramEmbed = ({
     if (embedDisabled || stage !== LOAD_SCRIPT_STAGE || !frm.document) {
       return;
     }
-    ensureScript(frm.document, INSTAGRAM_SCRIPT_ID, 'https://www.instagram.com/embed.js');
+    ensureScript(frm.document, INSTAGRAM_SCRIPT_ID, 'https://www.instagram.com/embed.js', () => {
+      setStage(EMBED_FAILED_STAGE);
+      reportError('script-missing');
+    });
     setStage(CONFIRM_SCRIPT_LOADED_STAGE);
   }, [stage, frm.document, embedDisabled]);
 
@@ -114,9 +140,13 @@ export const InstagramEmbed = ({
           setStage(PROCESS_EMBED_STAGE);
         }
       }, 50);
+      subs.setTimeout(() => {
+        setStage(EMBED_FAILED_STAGE);
+        reportError('script-missing');
+      }, retryDelay);
     }
     return subs.createCleanup();
-  }, [stage, frm.window, embedDisabled]);
+  }, [stage, frm.window, embedDisabled, retryDelay]);
 
   useEffect(() => {
     if (embedDisabled || stage !== PROCESS_EMBED_STAGE) {
@@ -128,6 +158,8 @@ export const InstagramEmbed = ({
       setStage(CONFIRM_EMBED_SUCCESS_STAGE);
     } else {
       console.error('Instagram embed script not found. Unable to process Instagram embed:', url);
+      setStage(EMBED_FAILED_STAGE);
+      reportError('script-missing');
     }
   }, [stage, frm.window, url, embedDisabled]);
 
@@ -142,27 +174,30 @@ export const InstagramEmbed = ({
           setStage(EMBED_SUCCESS_STAGE);
         }
       }, 50);
-      if (!retryDisabled) {
-        subs.setTimeout(() => {
+      subs.setTimeout(() => {
+        if (retryDisabled || retryCount >= EMBED_MAX_RETRIES) {
+          setStage(EMBED_FAILED_STAGE);
+          reportError('unavailable');
+        } else {
           setStage(RETRYING_STAGE);
-        }, retryDelay);
-      }
+        }
+      }, retryDelay);
     }
     return subs.createCleanup();
-  }, [embedId, retryDelay, retryDisabled, stage, frm.document, embedDisabled]);
+  }, [embedId, retryCount, retryDelay, retryDisabled, stage, frm.document, embedDisabled]);
 
   useEffect(() => {
     if (embedDisabled || stage !== RETRYING_STAGE) {
       return;
     }
-    setProcessTime(Date.now());
+    setRetryCount((count) => count + 1);
     setStage(PROCESS_EMBED_STAGE);
   }, [stage, embedDisabled]);
 
-  const cleanUrlWithEndingSlash = getCleanInstagramUrl(url);
   const fallbackHeight = captioned ? INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT : INSTAGRAM_PLACEHOLDER_HEIGHT;
   const { height: observedHeight, containerRef } = useAutoEmbedHeight({
     enabled: !embedDisabled && height == null,
+    resetKey: url,
   });
   const embedReady = !embedDisabled && stage === EMBED_SUCCESS_STAGE;
 
@@ -173,7 +208,7 @@ export const InstagramEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,
@@ -192,7 +227,7 @@ export const InstagramEmbed = ({
   const { frameHeight, showPlaceholder } = resolveEmbedFrame({
     ready: embedReady,
     measuredHeight: observedHeight,
-    fallbackHeight,
+    fallbackHeight: resolvedPlaceholder != null ? fallbackHeight : 0,
     scale,
     height,
   });
@@ -200,17 +235,20 @@ export const InstagramEmbed = ({
   return (
     <div ref={boxRef} style={boxStyle}>
     <EmbedShell
+      id={id}
+      testID={testID}
       className={classNames(embedId, className)}
       extraClassName="rsme-instagram-embed"
       width="100%"
       height={frameHeight}
       borderRadius={borderRadius}
-      style={{ position: 'relative', ...style }}
+      style={style}
     >
+      <MediaFrame showPlaceholder={showPlaceholder} placeholder={resolvedPlaceholder}>
       <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
-      {embedDisabled ? null : (
+      {embedDisabled || !cleanUrlWithEndingSlash ? null : (
+      <Box key={embedContainerKey}>
       <blockquote
-        key={embedContainerKey}
         className="instagram-media"
         data-instgrm-permalink={`${cleanUrlWithEndingSlash}?utm_source=ig_embed&utm_campaign=loading`}
         data-instgrm-version={resolvedVersion}
@@ -222,11 +260,10 @@ export const InstagramEmbed = ({
           &nbsp;
         </div>
       </blockquote>
+      </Box>
       )}
       </div>
-      {showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null ? (
-        <Box style={placeholderOverlayStyle}>{resolvedPlaceholder}</Box>
-      ) : null}
+      </MediaFrame>
     </EmbedShell>
     </div>
   );

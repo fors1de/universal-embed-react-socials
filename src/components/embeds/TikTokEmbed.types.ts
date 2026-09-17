@@ -1,7 +1,7 @@
-import type { CommonEmbedProps } from '../../types';
-import type { Frame } from '../../hooks/useFrame';
-import type { PlaceholderEmbedProps } from '../placeholder/PlaceholderEmbed.types';
+import type { CommonEmbedProps, Frame } from '../../types';
+import type { PlaceholderEmbedOptions } from '../placeholder/PlaceholderEmbed.types';
 import { playerIframeHtml } from './playerIframeHtml';
+import { toQueryString } from '../../utils/parseUrl';
 
 /** Official Embed Player query flags. https://developers.tiktok.com/doc/embed-player */
 export type TikTokPlayerFlag = 0 | 1;
@@ -24,12 +24,7 @@ export interface TikTokPlayerVars {
 }
 
 export interface TikTokEmbedProps extends CommonEmbedProps {
-  placeholderProps?: PlaceholderEmbedProps;
-  scriptLoadDisabled?: boolean;
-  retryDelay?: number;
-  retryDisabled?: boolean;
-  frame?: Frame;
-  debug?: boolean;
+  placeholderProps?: PlaceholderEmbedOptions;
   /**
    * Use TikTok's Embed Player (`/player/v1`) so fullscreen stays in-app
    * instead of opening TikTok. Defaults to `false` (oEmbed card).
@@ -37,6 +32,15 @@ export interface TikTokEmbedProps extends CommonEmbedProps {
   allowsFullscreenVideo?: boolean;
   /** Official Embed Player query parameters. Implies the Embed Player. */
   tikTokProps?: TikTokPlayerVars;
+}
+
+/** Web only. Ignored on React Native. */
+export interface TikTokEmbedWebProps {
+  scriptLoadDisabled?: boolean;
+  retryDelay?: number;
+  retryDisabled?: boolean;
+  frame?: Frame;
+  debug?: boolean;
 }
 
 export const TIKTOK_PLAYER_HOST = 'https://www.tiktok.com';
@@ -52,19 +56,13 @@ export const buildTikTokPlayerSrc = (
   videoId: string,
   playerVars: TikTokPlayerVars = {},
 ): string => {
-  const params = new URLSearchParams();
-  Object.entries(playerVars).forEach(([key, value]) => {
-    if (value !== undefined) {
-      params.set(key, String(value));
-    }
-  });
-  const query = params.toString();
+  const query = toQueryString(playerVars);
   return `${TIKTOK_PLAYER_HOST}/player/v1/${videoId}${query ? `?${query}` : ''}`;
 };
 
-export const buildTikTokPlayerHtml = (src: string): string =>
+export const buildTikTokPlayerHtml = (src: string, title?: string): string =>
   playerIframeHtml({
     src,
     allow: 'fullscreen; autoplay; encrypted-media',
-    extraIframeAttrs: 'title="TikTok embed"',
+    title,
   });

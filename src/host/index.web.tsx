@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import type {
   BoxProps,
   IFrameProps,
@@ -49,14 +50,15 @@ export const EmbedLink = ({
   children,
   target = "_blank",
   rel = "noopener noreferrer",
+  "aria-label": ariaLabel,
 }: LinkProps) => (
-  <a href={href} className={className} style={style} target={target} rel={rel}>
+  <a href={href} className={className} style={style} target={target} rel={rel} aria-label={ariaLabel}>
     {children}
   </a>
 );
 
 export const EmbedImage = ({ src, className, style, alt }: ImageProps) => (
-  <img src={src} className={className} style={style} alt={alt} />
+  <img src={src} className={className} style={style} alt={alt ?? ""} />
 );
 
 export const IFrame = ({
@@ -67,13 +69,15 @@ export const IFrame = ({
   className,
   style,
   onLoad,
+  onError,
   allow,
   allowFullScreen,
   title,
   iframeRef,
+  sandbox,
 }: IFrameProps) => (
   <iframe
-    ref={iframeRef}
+    ref={iframeRef as Ref<HTMLIFrameElement>}
     src={src}
     srcDoc={srcDoc}
     width={width}
@@ -81,9 +85,11 @@ export const IFrame = ({
     className={className}
     style={{ display: "block", border: 0, ...style }}
     onLoad={onLoad}
+    onError={onError}
     allow={allow}
     allowFullScreen={allowFullScreen}
     title={title}
+    sandbox={sandbox}
   />
 );
 

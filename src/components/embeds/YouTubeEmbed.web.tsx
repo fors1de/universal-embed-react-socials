@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Box, IFrame } from '../../host';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
+import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { aspectRatioHeight, collapsedEmbedStyle, embedMaxWidthStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { getYouTubeStart, getYouTubeVideoId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { EmbedShell } from './EmbedShell';
@@ -30,19 +33,44 @@ export const YouTubeEmbed = ({
   embedDisabled: embedDisabledProp = false,
   lazy = false,
   youTubeProps,
+  onError,
+  iframeTitle,
   className,
   style,
+  id,
+  testID,
 }: YouTubeEmbedProps) => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
+  const reportError = useEmbedOnError(onError, url);
   const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (embedDisabled) {
-      setReady(false);
-    }
-  }, [embedDisabled]);
-  const videoId = youTubeProps?.videoId ?? getYouTubeVideoId(url);
+    setReady(false);
+    setFailed(false);
+  }, [url, embedDisabled]);
+
+  const videoId = youTubeProps?.videoId || getYouTubeVideoId(url);
   const start = getYouTubeStart(url);
+
+  useEffect(() => {
+    if (embedDisabled || videoId) {
+      return;
+    }
+    setFailed(true);
+    reportError('invalid-url');
+  }, [embedDisabled, reportError, videoId]);
+
+  useEffect(() => {
+    if (embedDisabled || ready || !videoId) {
+      return;
+    }
+    const id = window.setTimeout(() => {
+      setFailed(true);
+      reportError('timeout');
+    }, EMBED_GIVE_UP_MS);
+    return () => window.clearTimeout(id);
+  }, [url, embedDisabled, ready, videoId]);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const percentageHeight = isPercentage(height);
   const autoHeight = height == null && youTubeProps?.opts?.height == null;
@@ -53,7 +81,7 @@ export const YouTubeEmbed = ({
     ...(start ? { start } : {}),
     ...youTubeProps?.opts?.playerVars,
   };
-  const src = buildYouTubeSrc(videoId, playerVars);
+  const src = videoId ? buildYouTubeSrc(videoId, playerVars) : '';
 
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url,
@@ -62,7 +90,7 @@ export const YouTubeEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,
@@ -79,6 +107,8 @@ export const YouTubeEmbed = ({
   return (
     <div ref={lazyRef} style={{ ...embedMaxWidthStyle(resolvedMaxWidth), ...collapsedEmbedStyle(!reserveFrame) }}>
       <EmbedShell
+        id={id}
+        testID={testID}
         className={className}
         extraClassName="rsme-youtube-embed"
         width="100%"
@@ -91,19 +121,23 @@ export const YouTubeEmbed = ({
         }}
       >
         <MediaFrame showPlaceholder={(!ready || embedDisabled) && hasPlaceholder} placeholder={resolvedPlaceholder}>
-          {embedDisabled ? null : (
+          {embedDisabled || !videoId ? null : (
           <Box style={{ width: '100%', height: '100%', visibility: ready ? 'visible' : 'hidden' }}>
             <IFrame
+              key={videoId}
               className={youTubeProps?.className ?? 'youtube-iframe'}
               src={src}
               width="100%"
               height="100%"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              title="YouTube embed"
+              title={embedIframeTitle('YouTube', { title: iframeTitle, id: videoId })}
               onLoad={() => {
                 setReady(true);
-                youTubeProps?.onReady?.({ target: undefined });
+              }}
+              onError={() => {
+                setFailed(true);
+                reportError('load-failed');
               }}
             />
           </Box>

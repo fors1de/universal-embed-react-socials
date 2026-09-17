@@ -1,5 +1,7 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Linking } from 'react-native';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { getTikTokVideoId } from '../../utils/urls';
 import { resolveTikTokBrowserUrl } from '../../utils/tiktokUrls';
 import { withTikTokProfileLinks } from '../../utils/tiktokProfileLinks';
@@ -29,20 +31,36 @@ export const TikTokEmbed = ({
   allowsFullscreenVideo,
   tikTokProps,
   height,
+  onError,
+  embedDisabled,
+  iframeTitle,
   ...props
 }: TikTokEmbedProps) => {
   const videoId = getTikTokVideoId(url);
+  const reportError = useEmbedOnError(onError, url);
+  const resolvedTitle = embedIframeTitle('TikTok', { title: iframeTitle, id: videoId });
+  useEffect(() => {
+    if (!videoId && !embedDisabled) {
+      reportError('invalid-url');
+    }
+  }, [embedDisabled, reportError, videoId]);
   const usePlayer = usesTikTokPlayer(allowsFullscreenVideo, tikTokProps);
   const html = useMemo(
-    () => (usePlayer ? buildTikTokPlayerHtml(buildTikTokPlayerSrc(videoId, tikTokProps)) : undefined),
-    [tikTokProps, usePlayer, videoId],
+    () =>
+      usePlayer && videoId
+        ? buildTikTokPlayerHtml(buildTikTokPlayerSrc(videoId, tikTokProps), resolvedTitle)
+        : undefined,
+    [resolvedTitle, tikTokProps, usePlayer, videoId],
   );
   return (
     <NativeSocialEmbed
       {...props}
       url={url}
       height={height}
+      embedDisabled={embedDisabled || !videoId}
       placeholderText={placeholderText}
+      onError={onError}
+      iframeTitle={resolvedTitle}
       {...(usePlayer
         ? {
             html,
@@ -50,7 +68,7 @@ export const TikTokEmbed = ({
             aspectRatio: height == null ? TIKTOK_PLAYER_ASPECT_RATIO : undefined,
             allowsFullscreenVideo: allowsFullscreenVideo !== false,
           }
-        : { uri: `https://www.tiktok.com/embed/v2/${videoId}` })}
+        : { uri: videoId ? `https://www.tiktok.com/embed/v2/${videoId}` : undefined })}
       fallbackHeight={usePlayer ? TIKTOK_PLAYER_FALLBACK_HEIGHT : defaultPlaceholderHeight}
       allowsInlineMediaPlayback
       openLinksInBrowser={openLinksInBrowser}

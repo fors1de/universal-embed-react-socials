@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { embedIframeTitle } from '../../utils/iframeTitle';
+import { getPinterestPinId } from '../../utils/urls';
 import { pinterestEmbedHtml } from './embedHtml';
 import { NativeSocialEmbed } from './NativeSocialEmbed';
 import type { PinterestEmbedProps } from './PinterestEmbed.types';
@@ -11,6 +13,7 @@ export const PinterestEmbed = ({
   url,
   postUrl,
   placeholderText = 'View post on Pinterest',
+  iframeTitle,
   ...props
 }: PinterestEmbedProps) => {
   const pinUrl = postUrl ?? url;
@@ -21,9 +24,9 @@ export const PinterestEmbed = ({
       url={url}
       placeholderText={placeholderText}
       placeholderUrl={pinUrl}
+      iframeTitle={embedIframeTitle('Pinterest', { title: iframeTitle, id: getPinterestPinId(pinUrl), url: pinUrl })}
       html={html}
       baseUrl="https://www.pinterest.com"
-      autoHeight
       fallbackHeight={officialEmbedHeight}
     />
   );

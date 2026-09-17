@@ -1,4 +1,5 @@
 import type { EmbedWebViewMessageEvent, EmbedWebViewProps } from '../types';
+import { parseUrl } from './parseUrl';
 
 const messageType = 'rsme:tiktok-profile-link';
 
@@ -35,10 +36,15 @@ const parseProfileLink = (data: string | undefined): string | undefined => {
     if (message == null || typeof message !== 'object' ||
         !('type' in message) || message.type !== messageType ||
         !('url' in message) || typeof message.url !== 'string') return undefined;
-    const url = new URL(message.url);
-    if (!/^https?:$/.test(url.protocol) ||
-        !(url.hostname === 'tiktok.com' || url.hostname.endsWith('.tiktok.com')) ||
-        !/^\/@[a-zA-Z0-9._]+\/?$/.test(url.pathname)) return undefined;
+    const url = parseUrl(message.url);
+    if (
+      !url ||
+      !/^https?:$/.test(url.protocol) ||
+      !(url.hostname === 'tiktok.com' || url.hostname.endsWith('.tiktok.com')) ||
+      !/^\/@[a-zA-Z0-9._]+\/?$/.test(url.pathname)
+    ) {
+      return undefined;
+    }
     return url.href;
   } catch {
     return undefined;

@@ -8,7 +8,7 @@ export interface BorderSpinnerProps {
 }
 
 export const BorderSpinner = ({ className, style }: BorderSpinnerProps) => (
-  <Box>
+  <Box role="status" aria-live="polite" aria-label="Loading">
     <StyleTag>
       {`
         .rsme-spinner {
@@ -25,8 +25,18 @@ export const BorderSpinner = ({ className, style }: BorderSpinnerProps) => (
             transform: rotate(360deg);
           }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .rsme-spinner {
+            animation: none;
+            border-right-color: rgba(0,0,0,0.75);
+          }
+        }
       `}
     </StyleTag>
-    <Box className={classNames('rsme-spinner', className)} style={{ width: 10, height: 10, minWidth: 10, minHeight: 10, flexShrink: 0, boxSizing: 'border-box', ...style }} />
+    <Box
+      aria-hidden="true"
+      className={classNames('rsme-spinner', className)}
+      style={{ width: 10, height: 10, minWidth: 10, minHeight: 10, flexShrink: 0, boxSizing: 'border-box', ...style }}
+    />
   </Box>
 );

@@ -1,6 +1,7 @@
 import type { CommonEmbedProps } from '../../types';
-import type { PlaceholderEmbedProps } from '../placeholder/PlaceholderEmbed.types';
+import type { PlaceholderEmbedOptions } from '../placeholder/PlaceholderEmbed.types';
 import { playerIframeHtml } from './playerIframeHtml';
+import { toQueryString } from '../../utils/parseUrl';
 
 export interface YouTubePlayerVars {
   start?: number;
@@ -21,12 +22,17 @@ export interface YouTubeProps {
     playerVars?: YouTubePlayerVars;
     [key: string]: unknown;
   };
+  /**
+   * Not invoked. This embed uses a plain iframe, not the YouTube IFrame API,
+   * so there is no player instance. Use the placeholder, `onError`, or on
+   * React Native `webViewProps.onLoad`.
+   */
   onReady?: (event: { target: unknown }) => void;
   [key: string]: unknown;
 }
 
 export interface YouTubeEmbedProps extends CommonEmbedProps {
-  placeholderProps?: PlaceholderEmbedProps;
+  placeholderProps?: PlaceholderEmbedOptions;
   youTubeProps?: YouTubeProps;
 }
 
@@ -39,22 +45,17 @@ export const buildYouTubeSrc = (
   playerVars: YouTubePlayerVars = {},
   host: string = YOUTUBE_EMBED_HOST,
 ): string => {
-  const params = new URLSearchParams();
-  Object.entries(playerVars).forEach(([key, value]) => {
-    if (value !== undefined) {
-      params.set(key, String(value));
-    }
-  });
-  const query = params.toString();
+  const query = toQueryString(playerVars);
   return `${host}/embed/${videoId}${query ? `?${query}` : ''}`;
 };
 
 /** WKWebView strips Referer on a bare embed URL, which YouTube rejects as Error 153. */
-export const buildYouTubeEmbedHtml = (src: string): string =>
+export const buildYouTubeEmbedHtml = (src: string, title?: string): string =>
   playerIframeHtml({
     src,
     allow:
       'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
     extraHead: '<meta name="referrer" content="strict-origin-when-cross-origin" />',
     extraIframeAttrs: 'referrerpolicy="strict-origin-when-cross-origin"',
+    title,
   });

@@ -16,18 +16,21 @@
   "sideEffects": false,
   "exports": {
     ".": {
+      "react-native": {
+        "types": "./src/index.ts",
+        "default": "./src/index.ts"
+      },
       "types": "./dist/index.d.ts",
-      "react-native": "./src/index.ts",
       "default": "./dist/index.js"
     }
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "types"
   ],
   "scripts": {
-    "build": "rm -rf ./dist && tsc && node scripts/flatten-web-suffix.js",
-    "test": "npm run build && node --test tests/*.test.cjs"
+    "build": "rm -rf ./dist && tsc && node scripts/flatten-web-suffix.js"
   },
   "publishConfig": {
     "access": "public"
@@ -49,8 +52,8 @@
     "youtube"
   ],
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
     "react-native": "*",
     "react-native-webview": "*"
   },

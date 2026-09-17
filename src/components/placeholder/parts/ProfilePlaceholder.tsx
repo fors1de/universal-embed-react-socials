@@ -7,7 +7,7 @@ export interface ProfilePlaceholderProps {
 }
 
 export const ProfilePlaceholder = ({ className, style }: ProfilePlaceholderProps) => (
-  <Box className={className} style={style}>
+  <Box aria-hidden="true" className={className} style={style}>
     <Box style={{ display: 'flex', flexDirection: 'row', columnGap: 14 }}>
       <Box
         style={{

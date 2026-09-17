@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveNativeEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { NativeEmbedView } from './NativeEmbedView';
@@ -27,8 +27,15 @@ export const NativeSocialEmbed = ({
   openLinksInBrowser = true,
   fallbackHeight,
   placeholderUrl,
+  iframeSandbox: _iframeSandbox,
+  iframeTitle,
+  onError,
   ...viewProps
 }: NativeSocialEmbedProps) => {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setFailed(false);
+  }, [url]);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const resolvedPlaceholder = useMemo(() => {
     if (placeholderDisabled) {
@@ -38,7 +45,7 @@ export const NativeSocialEmbed = ({
       placeholderText,
       placeholderImageUrl,
       placeholderSpinner,
-      placeholderSpinnerDisabled,
+      placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
       placeholderProps,
       placeholder,
       placeholderWidth,
@@ -63,12 +70,14 @@ export const NativeSocialEmbed = ({
     placeholderText,
     placeholderUrl,
     placeholderWidth,
+    failed,
     url,
   ]);
 
   return (
     <NativeEmbedView
       {...viewProps}
+      url={url}
       width={resolvedMaxWidth}
       height={height}
       style={style}
@@ -79,6 +88,11 @@ export const NativeSocialEmbed = ({
       lazy={lazy}
       openLinksInBrowser={openLinksInBrowser}
       webViewProps={webViewProps}
+      iframeTitle={iframeTitle}
+      onError={(error) => {
+        setFailed(true);
+        onError?.(error);
+      }}
     />
   );
 };

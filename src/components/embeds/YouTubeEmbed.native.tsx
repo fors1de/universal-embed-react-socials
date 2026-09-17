@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { getYouTubeStart, getYouTubeVideoId } from '../../utils/urls';
 import { NativeSocialEmbed } from './NativeSocialEmbed';
 import {
@@ -18,10 +20,20 @@ export const YouTubeEmbed = ({
   youTubeProps,
   placeholderText = 'Watch on YouTube',
   height,
+  onError,
+  embedDisabled,
+  iframeTitle,
   ...props
 }: YouTubeEmbedProps) => {
-  const videoId = youTubeProps?.videoId ?? getYouTubeVideoId(props.url);
+  const videoId = youTubeProps?.videoId || getYouTubeVideoId(props.url);
   const start = getYouTubeStart(props.url);
+  const reportError = useEmbedOnError(onError, props.url);
+  const resolvedTitle = embedIframeTitle('YouTube', { title: iframeTitle, id: videoId });
+  useEffect(() => {
+    if (!videoId && !embedDisabled) {
+      reportError('invalid-url');
+    }
+  }, [embedDisabled, reportError, videoId]);
   const playerVars: YouTubePlayerVars = useMemo(
     () => ({
       playsinline: 1,
@@ -33,20 +45,26 @@ export const YouTubeEmbed = ({
     [start, youTubeProps?.opts?.playerVars],
   );
   const html = useMemo(
-    () => buildYouTubeEmbedHtml(buildYouTubeSrc(videoId, playerVars, YOUTUBE_NATIVE_ORIGIN)),
-    [playerVars, videoId],
+    () =>
+      videoId
+        ? buildYouTubeEmbedHtml(buildYouTubeSrc(videoId, playerVars, YOUTUBE_NATIVE_ORIGIN), resolvedTitle)
+        : undefined,
+    [playerVars, resolvedTitle, videoId],
   );
   return (
     <NativeSocialEmbed
       {...props}
+      embedDisabled={embedDisabled || !videoId}
       placeholderText={placeholderText}
       html={html}
+      iframeTitle={resolvedTitle}
       baseUrl={YOUTUBE_NATIVE_ORIGIN}
       headers={youTubeHeaders}
       height={height ?? youTubeProps?.opts?.height}
       aspectRatio={16 / 9}
       fallbackHeight={defaultPlaceholderHeight}
       allowsInlineMediaPlayback
+      onError={onError}
     />
   );
 };

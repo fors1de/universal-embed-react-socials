@@ -24,6 +24,7 @@ export interface LinkProps {
   children?: ReactNode;
   target?: string;
   rel?: string;
+  'aria-label'?: string;
 }
 
 export interface ImageProps {
@@ -41,10 +42,12 @@ export interface IFrameProps {
   className?: string;
   style?: CSSProperties;
   onLoad?: () => void;
+  onError?: () => void;
   allow?: string;
   allowFullScreen?: boolean;
   title?: string;
-  iframeRef?: Ref<HTMLIFrameElement>;
+  iframeRef?: Ref<unknown>;
+  sandbox?: string;
 }
 
 export interface StyleTagProps {

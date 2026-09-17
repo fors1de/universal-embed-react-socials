@@ -5,11 +5,13 @@ export const playerIframeHtml = ({
   allow,
   extraHead = '',
   extraIframeAttrs = '',
+  title,
 }: {
   src: string;
   allow: string;
   extraHead?: string;
   extraIframeAttrs?: string;
+  title?: string;
 }): string => `<!DOCTYPE html>
 <html>
   <head>
@@ -19,6 +21,6 @@ export const playerIframeHtml = ({
     <style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;} iframe{margin:0;padding:0;width:100%;height:100%;border:0;}</style>
   </head>
   <body>
-    <iframe src="${escapeHtmlAttribute(src)}" allow="${escapeHtmlAttribute(allow)}" ${extraIframeAttrs} allowfullscreen></iframe>
+    <iframe src="${escapeHtmlAttribute(src)}" allow="${escapeHtmlAttribute(allow)}"${title ? ` title="${escapeHtmlAttribute(title)}"` : ''} ${extraIframeAttrs} allowfullscreen></iframe>
   </body>
 </html>`;

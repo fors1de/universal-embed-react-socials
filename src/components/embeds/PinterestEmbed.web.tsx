@@ -1,7 +1,12 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { IFrame } from '../../host';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
+import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
+import { resolveIframeSandbox } from '../../utils/iframeSandbox';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { embedMaxWidthStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
+import { getPinterestPinId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { pinterestEmbedHtml } from './embedHtml';
 import { EmbedShell } from './EmbedShell';
@@ -30,10 +35,17 @@ export const PinterestEmbed = ({
   placeholderDisabled = false,
   embedDisabled: embedDisabledProp = false,
   lazy = false,
+  iframeSandbox,
+  onError,
+  iframeTitle,
   className,
   style,
+  id,
+  testID,
 }: PinterestEmbedProps) => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
+  const reportError = useEmbedOnError(onError, url);
+  const sandbox = resolveIframeSandbox(iframeSandbox);
   const embedId = useId();
   const postHref = postUrl ?? url;
   const embedHtml = useMemo(
@@ -42,6 +54,7 @@ export const PinterestEmbed = ({
   );
   const [frameSrc, setFrameSrc] = useState<string | undefined>();
   const [pinHeight, setPinHeight] = useState(0);
+  const [failed, setFailed] = useState(false);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const percentageHeight = isPercentage(height);
 
@@ -49,17 +62,22 @@ export const PinterestEmbed = ({
     if (embedDisabled) {
       setFrameSrc(undefined);
       setPinHeight(0);
+      setFailed(false);
       return;
     }
     const blob = new Blob([embedHtml], { type: 'text/html' });
     const next = URL.createObjectURL(blob);
     setFrameSrc(next);
     setPinHeight(0);
+    setFailed(false);
     return () => URL.revokeObjectURL(next);
   }, [embedHtml, embedDisabled]);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin && event.origin !== 'null') {
+        return;
+      }
       const data = event.data as { source?: string; id?: string; height?: number } | null;
       if (!data || data.source !== 'rsme-pinterest' || data.id !== embedId) {
         return;
@@ -73,12 +91,19 @@ export const PinterestEmbed = ({
     return () => window.removeEventListener('message', onMessage);
   }, [embedId]);
 
+  useEffect(() => {
+    if (embedDisabled || pinHeight > 0) {
+      return;
+    }
+    const id = window.setTimeout(() => {
+      setFailed(true);
+      reportError('timeout');
+    }, EMBED_GIVE_UP_MS);
+    return () => window.clearTimeout(id);
+  }, [embedDisabled, embedHtml, pinHeight]);
+
   const frameHeight = typeof height === 'number' ? height : pinHeight;
   const ready = !embedDisabled && frameHeight > 0;
-  const shellHeight = percentageHeight
-    ? '100%'
-    : frameHeight || (embedDisabled ? officialEmbedHeight : undefined);
-
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url: postHref,
     placeholderText,
@@ -86,7 +111,7 @@ export const PinterestEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,
@@ -102,10 +127,15 @@ export const PinterestEmbed = ({
     providerWidth: resolvedMaxWidth,
     providerHeight: officialEmbedHeight,
   });
+  const shellHeight = percentageHeight
+    ? height
+    : frameHeight || (embedDisabled ? officialEmbedHeight : undefined);
 
   return (
     <div ref={lazyRef} style={{ ...embedMaxWidthStyle(resolvedMaxWidth), minWidth: 0 }}>
       <EmbedShell
+        id={id}
+        testID={testID}
         className={className}
         extraClassName="rsme-pinterest-embed"
         width="100%"
@@ -113,13 +143,19 @@ export const PinterestEmbed = ({
         borderRadius={borderRadius}
         style={style}
       >
-        <MediaFrame showPlaceholder={!ready && !placeholderDisabled} placeholder={resolvedPlaceholder}>
+        <MediaFrame showPlaceholder={!ready} placeholder={resolvedPlaceholder}>
           {embedDisabled || !frameSrc ? null : (
             <IFrame
+              key={postHref}
               src={frameSrc}
               width="100%"
               height={frameHeight || officialEmbedHeight}
-              title="Pinterest embed"
+              title={embedIframeTitle('Pinterest', { title: iframeTitle, id: getPinterestPinId(postHref), url: postHref })}
+              sandbox={sandbox}
+              onError={() => {
+                setFailed(true);
+                reportError('load-failed');
+              }}
               style={{
                 width: '100%',
                 height: frameHeight || officialEmbedHeight,

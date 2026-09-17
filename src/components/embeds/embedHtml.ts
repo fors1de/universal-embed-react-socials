@@ -1,5 +1,6 @@
 import { AUTO_HEIGHT_TOPIC } from "./nativeEmbedHeight";
 import { getFacebookSdkSrc } from "../../utils/apiVersion";
+import { embedIframeTitle } from "../../utils/iframeTitle";
 import { escapeHtmlAttribute } from "../../utils/urls";
 
 const documentShell = (body: string): string => `<!DOCTYPE html>
@@ -150,7 +151,13 @@ export const xEmbedHtml = ({ postId }: { postId: string }): string =>
 export const LINKEDIN_DESIGN_WIDTH = 504;
 export const LINKEDIN_DESIGN_HEIGHT = 570;
 
-export const linkedinEmbedHtml = ({ url }: { url: string }): string =>
+export const linkedinEmbedHtml = ({
+  url,
+  title = embedIframeTitle('LinkedIn'),
+}: {
+  url: string;
+  title?: string;
+}): string =>
   documentShell(`
     <style>
       html,body{width:100%;margin:0;padding:0;overflow:hidden;background:transparent;}
@@ -158,7 +165,7 @@ export const linkedinEmbedHtml = ({ url }: { url: string }): string =>
       iframe{border:0;display:block;margin:0;}
     </style>
     <div id="li-wrap">
-      <iframe src="${escapeHtmlAttribute(url)}" width="${LINKEDIN_DESIGN_WIDTH}" height="${LINKEDIN_DESIGN_HEIGHT}" title="LinkedIn embed"></iframe>
+      <iframe src="${escapeHtmlAttribute(url)}" width="${LINKEDIN_DESIGN_WIDTH}" height="${LINKEDIN_DESIGN_HEIGHT}" title="${escapeHtmlAttribute(title)}"></iframe>
     </div>
     <script>
       (function () {
