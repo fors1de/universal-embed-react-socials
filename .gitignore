@@ -6,4 +6,5 @@ dist
 *.log
 embed-next
 .yarn
+yarn.lock
 metro
