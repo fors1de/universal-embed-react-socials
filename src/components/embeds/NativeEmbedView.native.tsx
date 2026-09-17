@@ -103,6 +103,8 @@ export const NativeEmbedView = ({
   webViewProps,
   url = '',
   onError,
+  id,
+  testID,
 }: NativeEmbedViewProps) => {
   const webViewRef = useRef<WebView>(null);
   const wrapRef = useRef<View>(null);
@@ -204,7 +206,8 @@ export const NativeEmbedView = ({
     source: _source,
     onShouldStartLoadWithRequest,
     onOpenWindow,
-    setSupportMultipleWindows: _setSupportMultipleWindows,
+    setSupportMultipleWindows: supportMultipleWindows,
+    onContentProcessDidTerminate,
     injectedJavaScriptBeforeContentLoaded,
     ...restWebViewProps
   } = webViewProps ?? {};
@@ -230,6 +233,8 @@ export const NativeEmbedView = ({
   return (
     <View
       ref={wrapRef}
+      nativeID={id}
+      testID={testID}
       onLayout={(event: { nativeEvent: { layout: { width: number } } }) => {
         const next = Math.round(event.nativeEvent.layout.width);
         setBoxWidth((prev) => (Math.abs(prev - next) < 2 ? prev : next));
@@ -268,7 +273,9 @@ export const NativeEmbedView = ({
             allowsInlineMediaPlayback={allowsInlineMediaPlayback}
             mediaPlaybackRequiresUserAction={mediaPlaybackRequiresUserAction}
             allowsFullscreenVideo={allowsFullscreenVideo}
-            setSupportMultipleWindows={openLinksInBrowser}
+            setSupportMultipleWindows={
+              supportMultipleWindows !== undefined ? supportMultipleWindows : openLinksInBrowser
+            }
             scrollEnabled={!autoHeightEnabled && !fitEnabled && !useAspectRatio}
             bounces={false}
             overScrollMode="never"
@@ -297,22 +304,25 @@ export const NativeEmbedView = ({
                 ? (resolveExternalUrl?.(request.url) ?? request.url)
                 : request.url;
               const nextRequest = { ...request, url: targetUrl };
+              const consumer = onShouldStartLoadWithRequest?.(nextRequest);
+              if (consumer === false) {
+                return false;
+              }
               if (shouldOpenInBrowser(nextRequest, uri, baseUrl, openLinksInBrowser)) {
                 openExternalUrl(targetUrl);
                 return false;
               }
-              return onShouldStartLoadWithRequest?.(nextRequest) ?? true;
+              return consumer ?? true;
             }}
             onOpenWindow={(event: EmbedWebViewOpenWindowEvent) => {
+              onOpenWindow?.(event);
               const requestedUrl = event.nativeEvent.targetUrl;
               const targetUrl = openLinksInBrowser
                 ? (resolveExternalUrl?.(requestedUrl) ?? requestedUrl)
                 : requestedUrl;
               if (openLinksInBrowser && targetUrl && isHttpUrl(targetUrl)) {
                 openExternalUrl(targetUrl);
-                return;
               }
-              onOpenWindow?.(event);
             }}
             onLoad={(event: unknown) => {
               setReady(true);
@@ -326,13 +336,15 @@ export const NativeEmbedView = ({
               reportError('load-failed');
               onWebViewHttpError?.(event);
             }}
-            onContentProcessDidTerminate={() => {
+            onContentProcessDidTerminate={(event?: unknown) => {
               if (crashReloadsRef.current >= EMBED_MAX_CRASH_RELOADS) {
                 reportError('load-failed');
+                onContentProcessDidTerminate?.(event);
                 return;
               }
               crashReloadsRef.current += 1;
               webViewRef.current?.reload();
+              onContentProcessDidTerminate?.(event);
             }}
             style={[
               {

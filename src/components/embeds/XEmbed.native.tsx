@@ -11,6 +11,7 @@ const defaultPlaceholderHeight = 560;
 export const XEmbed = ({
   twitterTweetEmbedProps,
   placeholderText = 'View post on X',
+  webViewProps,
   ...props
 }: XEmbedProps) => {
   const postId = twitterTweetEmbedProps?.tweetId ?? getXPostId(props.url);
@@ -22,6 +23,13 @@ export const XEmbed = ({
       html={html}
       baseUrl="https://twitter.com"
       fallbackHeight={defaultPlaceholderHeight}
+      webViewProps={{
+        ...webViewProps,
+        onLoad: (event) => {
+          twitterTweetEmbedProps?.onLoad?.();
+          webViewProps?.onLoad?.(event);
+        },
+      }}
     />
   );
 };

@@ -15,6 +15,7 @@ export type {
   EmbedError,
   EmbedErrorReason,
   EmbedPlaceholder,
+  EmbedStyle,
   EmbedWebViewMessageEvent,
   EmbedWebViewProps,
   Frame,

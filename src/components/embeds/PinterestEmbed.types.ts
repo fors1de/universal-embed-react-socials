@@ -1,7 +1,8 @@
 import type { CommonEmbedProps } from '../../types';
-import type { PlaceholderEmbedProps } from '../placeholder/PlaceholderEmbed.types';
+import type { PlaceholderEmbedOptions } from '../placeholder/PlaceholderEmbed.types';
 
 export interface PinterestEmbedProps extends CommonEmbedProps {
+  /** Canonical pin URL for the placeholder / link when it differs from the embed `url`. */
   postUrl?: string;
-  placeholderProps?: PlaceholderEmbedProps;
+  placeholderProps?: PlaceholderEmbedOptions;
 }

@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import type { EmbedStyle as EmbedStyleProp } from "../../types";
 import { Box } from "../../host";
 import { classNames } from "../../utils/classNames";
 import { boxSizeStyle } from "../../utils/style";
@@ -10,8 +11,10 @@ export interface EmbedShellProps {
   width?: string | number;
   height?: string | number;
   borderRadius?: number;
-  style?: CSSProperties;
+  style?: EmbedStyleProp;
   children?: ReactNode;
+  id?: string;
+  testID?: string;
 }
 
 export const EmbedShell = ({
@@ -22,10 +25,14 @@ export const EmbedShell = ({
   borderRadius,
   style,
   children,
+  id,
+  testID,
 }: EmbedShellProps) => (
   <Box
+    id={id}
+    testID={testID}
     className={classNames("rsme-embed", extraClassName, className)}
-    style={boxSizeStyle(width, height, { borderRadius, ...style })}
+    style={boxSizeStyle(width, height, { borderRadius, ...(style as CSSProperties) })}
   >
     <EmbedStyle />
     {children}

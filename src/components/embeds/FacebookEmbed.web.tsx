@@ -62,6 +62,8 @@ export const FacebookEmbed = ({
   onError,
   className,
   style,
+  id,
+  testID,
 }: FacebookEmbedProps) => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const percentageWidth = isPercentage(resolvedMaxWidth);
@@ -177,6 +179,8 @@ export const FacebookEmbed = ({
   return (
     <div ref={boxRef} style={boxStyle}>
       <EmbedShell
+        id={id}
+        testID={testID}
         className={className}
         extraClassName="rsme-facebook-embed"
         width="100%"

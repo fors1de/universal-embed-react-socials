@@ -133,7 +133,7 @@ On React Native, tapped embed links open in the system browser by default. Pass 
 />
 ```
 
-Pass extra `react-native-webview` options with `webViewProps` (ignored on web):
+Pass extra `react-native-webview` options with `webViewProps` (ignored on web). `source` is owned by the embed. Navigation, open-window, load, error, and crash-recovery handlers are composed so your callback still runs. `setSupportMultipleWindows` defaults from `openLinksInBrowser` when omitted.
 
 ```jsx
 <FacebookEmbed
@@ -161,10 +161,21 @@ Every embed accepts:
 - `embedDisabled` — keep the placeholder and do not load the live embed (iframe, WebView, or provider scripts) until this is `false`.
 - `lazy` — wait until the embed is near the viewport before loading provider scripts or a WebView. Default `false` (load immediately, same as before).
 - `className` / `style`
+- `id` / `testID` — forwarded to the embed root (`data-testid` on web, `testID` / `nativeID` on React Native).
 - `webViewProps` (React Native only)
 - `openLinksInBrowser` (React Native only) — open tapped embed links in the system browser. Defaults to `true`. Ignored on web.
 - `iframeSandbox` (web only) — opt-in iframe `sandbox` for Facebook and Pinterest `blob:` embeds. See [Trust boundaries](#trust-boundaries).
 - `onError` — called once if the embed cannot load (`timeout`, `script-missing`, `unavailable`, or native `load-failed`). Deleted iframe posts often still load an error page, so they may not fire.
+
+Provider-specific:
+
+- `postUrl` — LinkedIn and Pinterest. Canonical post URL used as the placeholder target when it differs from the embed `url`.
+- `captioned` — Instagram. Request the captioned embed layout.
+- `apiVersion` — Facebook Graph / JS SDK version, or Instagram `data-instgrm-version`.
+- `locale` — Facebook SDK locale (for example `en_US`).
+- `allowsFullscreenVideo` — TikTok. Use the Embed Player so fullscreen stays in-app. Also accepted on native WebViews.
+
+`parseEmbedHeight` works on web and native. `useAutoEmbedHeight` is web-only; on React Native it is a no-op because auto-height is handled inside the embed WebView.
 
 ```jsx
 <InstagramEmbed

@@ -7,7 +7,7 @@ import { EngagementIconsPlaceholder } from './parts/EngagementIconsPlaceholder';
 import { ProfilePlaceholder } from './parts/ProfilePlaceholder';
 import type { PlaceholderEmbedProps } from './PlaceholderEmbed.types';
 
-export type { PlaceholderEmbedProps } from './PlaceholderEmbed.types';
+export type { PlaceholderEmbedOptions, PlaceholderEmbedProps } from './PlaceholderEmbed.types';
 
 export const PlaceholderEmbed = ({
   url,

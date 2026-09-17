@@ -1,5 +1,5 @@
 import type { CommonEmbedProps, Frame } from '../../types';
-import type { PlaceholderEmbedProps } from '../placeholder/PlaceholderEmbed.types';
+import type { PlaceholderEmbedOptions } from '../placeholder/PlaceholderEmbed.types';
 import { playerIframeHtml } from './playerIframeHtml';
 import { toQueryString } from '../../utils/query';
 
@@ -24,7 +24,7 @@ export interface TikTokPlayerVars {
 }
 
 export interface TikTokEmbedProps extends CommonEmbedProps {
-  placeholderProps?: PlaceholderEmbedProps;
+  placeholderProps?: PlaceholderEmbedOptions;
   scriptLoadDisabled?: boolean;
   retryDelay?: number;
   retryDisabled?: boolean;

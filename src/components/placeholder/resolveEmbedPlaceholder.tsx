@@ -1,8 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Box } from '../../host';
-import type { EmbedPlaceholder } from '../../types';
+import type { EmbedPlaceholder, EmbedStyle } from '../../types';
 import { PlaceholderEmbed } from './PlaceholderEmbed';
-import type { PlaceholderEmbedProps } from './PlaceholderEmbed.types';
+import type { PlaceholderEmbedOptions } from './PlaceholderEmbed.types';
 
 export interface EmbedPlaceholderFields {
   placeholder?: EmbedPlaceholder;
@@ -10,16 +10,16 @@ export interface EmbedPlaceholderFields {
   placeholderImageUrl?: string;
   placeholderSpinner?: ReactNode;
   placeholderSpinnerDisabled?: boolean;
-  placeholderProps?: PlaceholderEmbedProps;
+  placeholderProps?: PlaceholderEmbedOptions;
   placeholderWidth?: string | number;
   placeholderHeight?: string | number;
-  placeholderStyle?: CSSProperties;
+  placeholderStyle?: EmbedStyle;
   placeholderDisabled?: boolean;
 }
 
 export interface ResolveEmbedPlaceholderOptions extends EmbedPlaceholderFields {
   url?: string;
-  extraStyle?: CSSProperties;
+  extraStyle?: EmbedStyle;
   /** Current embed box size. Used when the user does not set a placeholder size. */
   embedWidth?: string | number;
   embedHeight?: string | number;
@@ -42,11 +42,21 @@ const placeholderBoxStyle = ({
 }: ResolveEmbedPlaceholderOptions): CSSProperties => ({
   boxSizing: 'border-box',
   maxWidth: '100%',
-  ...extraStyle,
-  width: placeholderWidth ?? embedWidth ?? providerWidth ?? extraStyle?.width ?? '100%',
-  height: placeholderHeight ?? embedHeight ?? providerHeight ?? extraStyle?.height ?? '100%',
-  ...placeholderStyle,
-  ...placeholderProps?.style,
+  ...(extraStyle as CSSProperties),
+  width:
+    placeholderWidth ??
+    embedWidth ??
+    providerWidth ??
+    (extraStyle as CSSProperties | undefined)?.width ??
+    '100%',
+  height:
+    placeholderHeight ??
+    embedHeight ??
+    providerHeight ??
+    (extraStyle as CSSProperties | undefined)?.height ??
+    '100%',
+  ...(placeholderStyle as CSSProperties),
+  ...(placeholderProps?.style as CSSProperties),
 });
 
 export const resolveEmbedPlaceholder = (options: ResolveEmbedPlaceholderOptions): ReactNode => {

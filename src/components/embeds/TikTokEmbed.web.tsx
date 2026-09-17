@@ -60,6 +60,8 @@ const TikTokPlayerEmbed = ({
   onError,
   className,
   style,
+  id,
+  testID,
 }: TikTokEmbedProps): ReactElement => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
   const reportError = useEmbedOnError(onError, url);
@@ -113,6 +115,8 @@ const TikTokPlayerEmbed = ({
   return (
     <div ref={lazyRef} style={{ ...embedMaxWidthStyle(resolvedMaxWidth), ...collapsedEmbedStyle(!reserveFrame) }}>
       <EmbedShell
+        id={id}
+        testID={testID}
         className={className}
         extraClassName="rsme-tiktok-embed"
         width="100%"
@@ -173,6 +177,8 @@ const TikTokOEmbed = ({
   onError,
   className,
   style,
+  id,
+  testID,
 }: TikTokEmbedProps): ReactElement => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(officialEmbedWidth, resolvedMaxWidth);
@@ -297,7 +303,7 @@ const TikTokOEmbed = ({
 
   return (
     <div ref={boxRef} style={boxStyle}>
-    <EmbedShell className={className} extraClassName="rsme-tiktok-embed" width="100%" height={frameHeight} borderRadius={borderRadius} style={{ position: 'relative', ...style }}>
+    <EmbedShell id={id} testID={testID} className={className} extraClassName="rsme-tiktok-embed" width="100%" height={frameHeight} borderRadius={borderRadius} style={{ position: 'relative', ...style }}>
       <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
       {embedDisabled ? null : (
       <Box key={embedContainerKey} className="tiktok-embed-container">

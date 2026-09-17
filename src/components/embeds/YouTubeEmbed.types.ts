@@ -1,5 +1,5 @@
 import type { CommonEmbedProps } from '../../types';
-import type { PlaceholderEmbedProps } from '../placeholder/PlaceholderEmbed.types';
+import type { PlaceholderEmbedOptions } from '../placeholder/PlaceholderEmbed.types';
 import { playerIframeHtml } from './playerIframeHtml';
 import { toQueryString } from '../../utils/query';
 
@@ -22,12 +22,17 @@ export interface YouTubeProps {
     playerVars?: YouTubePlayerVars;
     [key: string]: unknown;
   };
+  /**
+   * Not invoked. This embed uses a plain iframe, not the YouTube IFrame API,
+   * so there is no player instance. Use the placeholder, `onError`, or on
+   * React Native `webViewProps.onLoad`.
+   */
   onReady?: (event: { target: unknown }) => void;
   [key: string]: unknown;
 }
 
 export interface YouTubeEmbedProps extends CommonEmbedProps {
-  placeholderProps?: PlaceholderEmbedProps;
+  placeholderProps?: PlaceholderEmbedOptions;
   youTubeProps?: YouTubeProps;
 }
 

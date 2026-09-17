@@ -19,6 +19,9 @@ export interface EmbedError {
 /** Custom loading UI, or a render function. Return `null` to reserve no space. */
 export type EmbedPlaceholder = ReactNode | (() => ReactNode);
 
+/** Web `CSSProperties`, or a React Native style object. */
+export type EmbedStyle = CSSProperties | Record<string, unknown>;
+
 /** Browser realm for provider scripts. Structural so RN typecheck can run without DOM libs. */
 export interface FrameDocument {
   getElementById(id: string): { querySelector(selectors: string): unknown; remove(): void } | null;
@@ -41,7 +44,7 @@ export interface Frame {
 
 export interface EmbedContainerProps {
   className?: string;
-  style?: CSSProperties;
+  style?: EmbedStyle;
   children?: ReactNode;
   id?: string;
   testID?: string;
@@ -64,7 +67,7 @@ export interface CommonEmbedProps extends EmbedContainerProps {
   placeholderWidth?: string | number;
   /** Height of the placeholder box. Defaults to the embed height, then the provider default. */
   placeholderHeight?: string | number;
-  placeholderStyle?: CSSProperties;
+  placeholderStyle?: EmbedStyle;
   placeholderDisabled?: boolean;
   /**
    * When true, keep the placeholder and do not load the live embed

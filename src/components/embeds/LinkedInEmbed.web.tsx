@@ -35,6 +35,8 @@ export const LinkedInEmbed = ({
   onError,
   className,
   style,
+  id,
+  testID,
 }: LinkedInEmbedProps) => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(LINKEDIN_DESIGN_WIDTH, resolvedMaxWidth);
@@ -93,6 +95,8 @@ export const LinkedInEmbed = ({
   return (
     <div ref={boxRef} style={boxStyle}>
       <EmbedShell
+        id={id}
+        testID={testID}
         className={className}
         extraClassName="rsme-linkedin-embed"
         width="100%"

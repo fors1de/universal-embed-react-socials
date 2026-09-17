@@ -37,6 +37,8 @@ export const PinterestEmbed = ({
   onError,
   className,
   style,
+  id,
+  testID,
 }: PinterestEmbedProps) => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
   const reportError = useEmbedOnError(onError, url);
@@ -130,6 +132,8 @@ export const PinterestEmbed = ({
   return (
     <div ref={lazyRef} style={{ ...embedMaxWidthStyle(resolvedMaxWidth), minWidth: 0 }}>
       <EmbedShell
+        id={id}
+        testID={testID}
         className={className}
         extraClassName="rsme-pinterest-embed"
         width="100%"

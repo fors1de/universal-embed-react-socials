@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { EmbedError, EmbedWebViewProps } from '../../types';
+import type { EmbedError, EmbedStyle, EmbedWebViewProps } from '../../types';
 
 export interface NativeEmbedViewProps {
   html?: string;
@@ -13,7 +13,7 @@ export interface NativeEmbedViewProps {
   autoHeight?: boolean;
   /** Official embed width. The native box scales this design size to the layout width. */
   fitDesignWidth?: number;
-  style?: unknown;
+  style?: EmbedStyle;
   fallbackHeight: number;
   placeholder?: ReactNode;
   placeholderDisabled?: boolean;
@@ -28,4 +28,6 @@ export interface NativeEmbedViewProps {
   webViewProps?: EmbedWebViewProps;
   url?: string;
   onError?: (error: EmbedError) => void;
+  id?: string;
+  testID?: string;
 }

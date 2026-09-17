@@ -3,7 +3,7 @@ import { isJavaScriptUrl } from '../../utils/urls';
 import { BorderSpinner } from './parts/BorderSpinner';
 import type { PlaceholderEmbedProps } from './PlaceholderEmbed.types';
 
-export type { PlaceholderEmbedProps } from './PlaceholderEmbed.types';
+export type { PlaceholderEmbedOptions, PlaceholderEmbedProps } from './PlaceholderEmbed.types';
 
 export const PlaceholderEmbed = ({
   url,

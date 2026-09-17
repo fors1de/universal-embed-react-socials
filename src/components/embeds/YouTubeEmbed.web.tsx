@@ -35,6 +35,8 @@ export const YouTubeEmbed = ({
   onError,
   className,
   style,
+  id,
+  testID,
 }: YouTubeEmbedProps) => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
   const reportError = useEmbedOnError(onError, url);
@@ -94,6 +96,8 @@ export const YouTubeEmbed = ({
   return (
     <div ref={lazyRef} style={{ ...embedMaxWidthStyle(resolvedMaxWidth), ...collapsedEmbedStyle(!reserveFrame) }}>
       <EmbedShell
+        id={id}
+        testID={testID}
         className={className}
         extraClassName="rsme-youtube-embed"
         width="100%"
@@ -119,7 +123,6 @@ export const YouTubeEmbed = ({
               title="YouTube embed"
               onLoad={() => {
                 setReady(true);
-                youTubeProps?.onReady?.({ target: undefined });
               }}
               onError={() => {
                 setFailed(true);

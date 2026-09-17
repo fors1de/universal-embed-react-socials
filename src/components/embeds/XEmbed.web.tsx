@@ -39,6 +39,8 @@ export const XEmbed = ({
   onError,
   className,
   style,
+  id,
+  testID,
 }: XEmbedProps) => {
   const postId = twitterTweetEmbedProps?.tweetId ?? getXPostId(url);
   const onLoad = twitterTweetEmbedProps?.onLoad;
@@ -142,6 +144,8 @@ export const XEmbed = ({
   return (
     <div ref={boxRef} style={boxStyle}>
       <EmbedShell
+        id={id}
+        testID={testID}
         className={className}
         extraClassName="rsme-twitter-embed"
         width="100%"

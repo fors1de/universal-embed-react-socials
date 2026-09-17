@@ -67,6 +67,8 @@ export const InstagramEmbed = ({
   onError,
   className,
   style,
+  id,
+  testID,
 }: InstagramEmbedProps): ReactElement => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(officialEmbedWidth, resolvedMaxWidth);
@@ -228,6 +230,8 @@ export const InstagramEmbed = ({
   return (
     <div ref={boxRef} style={boxStyle}>
     <EmbedShell
+      id={id}
+      testID={testID}
       className={classNames(embedId, className)}
       extraClassName="rsme-instagram-embed"
       width="100%"

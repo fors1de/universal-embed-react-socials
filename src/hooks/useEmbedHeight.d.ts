@@ -1,5 +1,6 @@
 import type { MutableRefObject } from 'react';
 
+/** Parse a height out of a provider postMessage payload. Same on web and native. */
 export declare const parseEmbedHeight: (data: unknown, depth?: number) => number | undefined;
 
 export declare const useResponsiveEmbedScale: (
@@ -22,6 +23,10 @@ export declare const useResponsiveEmbedBox: (
   boxStyle: { width?: string | number; maxWidth?: string | number };
 };
 
+/**
+ * Measure an embed iframe on web.
+ * On React Native this is a no-op; native auto-height is handled inside the embed WebView.
+ */
 export declare const useAutoEmbedHeight: (options?: {
   enabled?: boolean;
   fallback?: number;
