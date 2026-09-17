@@ -80,6 +80,7 @@ export const FacebookEmbed = ({
     enabled: !embedDisabled && !usePluginFallback && !!frameSrc,
     measureSrcDoc: !embedDisabled && !usePluginFallback && !!frameSrc,
     measureSelector: 'iframe',
+    resetKey: url,
   });
   const contentHeight =
     measured != null && measured >= FACEBOOK_CONTENT_MIN ? measured : undefined;
@@ -164,6 +165,7 @@ export const FacebookEmbed = ({
             />
           ) : frameSrc ? (
             <IFrame
+              key={url}
               iframeRef={iframeRef}
               src={frameSrc}
               height={frameHeight}

@@ -1,6 +1,7 @@
 import type { CommonEmbedProps } from '../../types';
 import type { PlaceholderEmbedProps } from '../placeholder/PlaceholderEmbed.types';
 import { playerIframeHtml } from './playerIframeHtml';
+import { toQueryString } from '../../utils/query';
 
 export interface YouTubePlayerVars {
   start?: number;
@@ -39,13 +40,7 @@ export const buildYouTubeSrc = (
   playerVars: YouTubePlayerVars = {},
   host: string = YOUTUBE_EMBED_HOST,
 ): string => {
-  const params = new URLSearchParams();
-  Object.entries(playerVars).forEach(([key, value]) => {
-    if (value !== undefined) {
-      params.set(key, String(value));
-    }
-  });
-  const query = params.toString();
+  const query = toQueryString(playerVars);
   return `${host}/embed/${videoId}${query ? `?${query}` : ''}`;
 };
 

@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Box } from '../../host';
 import { useAutoEmbedHeight } from '../../hooks/useEmbedHeight';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
+import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { ensureScript } from '../../utils/ensureScript';
 import { useFrame } from '../../hooks/useFrame';
 import { placeholderOverlayStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
@@ -42,12 +43,14 @@ export const XEmbed = ({
   const onLoadRef = useRef(onLoad);
   onLoadRef.current = onLoad;
   const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
   const embedId = useId();
   const frm = useFrame();
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const { ref: boxRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
   const { measured: observedHeight, containerRef } = useAutoEmbedHeight({
     enabled: !embedDisabled && height == null,
+    resetKey: postId,
   });
   const boxStyle = {
     width: '100%' as const,
@@ -58,11 +61,14 @@ export const XEmbed = ({
   };
 
   useEffect(() => {
+    setReady(false);
+    setFailed(false);
     if (embedDisabled) {
-      setReady(false);
       return;
     }
-    const win = frm.window as Window & { twttr?: { widgets?: { load?: (el?: Element) => void } } };
+    const win = frm.window as typeof globalThis & {
+      twttr?: { widgets?: { load?: (el?: Element) => void } };
+    };
     const doc = frm.document;
     if (!doc) {
       return;
@@ -77,7 +83,7 @@ export const XEmbed = ({
     const cleanup = subs.createCleanup();
     subs.setInterval(() => {
       if (!processed && win.twttr?.widgets?.load) {
-        win.twttr.widgets.load(doc.getElementById(embedId) ?? undefined);
+        win.twttr.widgets.load((doc.getElementById(embedId) as Element | undefined) ?? undefined);
         processed = true;
       }
       const root = doc.getElementById(embedId);
@@ -87,6 +93,10 @@ export const XEmbed = ({
         cleanup();
       }
     }, 50);
+    subs.setTimeout(() => {
+      setFailed(true);
+      cleanup();
+    }, EMBED_GIVE_UP_MS);
     return cleanup;
   }, [embedId, frm.document, frm.window, postId, embedDisabled]);
 
@@ -97,7 +107,7 @@ export const XEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,
@@ -132,7 +142,7 @@ export const XEmbed = ({
       >
         <div ref={containerRef} style={{ width: '100%' }}>
           {embedDisabled ? null : (
-            <Box id={embedId}>
+            <Box id={embedId} key={postId}>
               <blockquote className="twitter-tweet" data-width={officialEmbedWidth}>
                 <a href={`https://twitter.com/i/status/${postId}`}>{placeholderText}</a>
               </blockquote>

@@ -44,7 +44,7 @@ export interface IFrameProps {
   allow?: string;
   allowFullScreen?: boolean;
   title?: string;
-  iframeRef?: Ref<HTMLIFrameElement>;
+  iframeRef?: Ref<unknown>;
 }
 
 export interface StyleTagProps {

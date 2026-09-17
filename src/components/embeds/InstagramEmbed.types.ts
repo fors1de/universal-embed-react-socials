@@ -1,5 +1,4 @@
-import type { CommonEmbedProps } from '../../types';
-import type { Frame } from '../../hooks/useFrame';
+import type { CommonEmbedProps, Frame } from '../../types';
 import type { PlaceholderEmbedProps } from '../placeholder/PlaceholderEmbed.types';
 
 export const INSTAGRAM_PLACEHOLDER_HEIGHT = 740;

@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { IFrame } from '../../host';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
+import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { embedMaxWidthStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { pinterestEmbedHtml } from './embedHtml';
@@ -42,6 +43,7 @@ export const PinterestEmbed = ({
   );
   const [frameSrc, setFrameSrc] = useState<string | undefined>();
   const [pinHeight, setPinHeight] = useState(0);
+  const [failed, setFailed] = useState(false);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const percentageHeight = isPercentage(height);
 
@@ -49,12 +51,14 @@ export const PinterestEmbed = ({
     if (embedDisabled) {
       setFrameSrc(undefined);
       setPinHeight(0);
+      setFailed(false);
       return;
     }
     const blob = new Blob([embedHtml], { type: 'text/html' });
     const next = URL.createObjectURL(blob);
     setFrameSrc(next);
     setPinHeight(0);
+    setFailed(false);
     return () => URL.revokeObjectURL(next);
   }, [embedHtml, embedDisabled]);
 
@@ -73,6 +77,14 @@ export const PinterestEmbed = ({
     return () => window.removeEventListener('message', onMessage);
   }, [embedId]);
 
+  useEffect(() => {
+    if (embedDisabled || pinHeight > 0) {
+      return;
+    }
+    const id = window.setTimeout(() => setFailed(true), EMBED_GIVE_UP_MS);
+    return () => window.clearTimeout(id);
+  }, [embedDisabled, embedHtml, pinHeight]);
+
   const frameHeight = typeof height === 'number' ? height : pinHeight;
   const ready = !embedDisabled && frameHeight > 0;
   const shellHeight = percentageHeight
@@ -86,7 +98,7 @@ export const PinterestEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,
@@ -116,6 +128,7 @@ export const PinterestEmbed = ({
         <MediaFrame showPlaceholder={!ready && !placeholderDisabled} placeholder={resolvedPlaceholder}>
           {embedDisabled || !frameSrc ? null : (
             <IFrame
+              key={postHref}
               src={frameSrc}
               width="100%"
               height={frameHeight || officialEmbedHeight}

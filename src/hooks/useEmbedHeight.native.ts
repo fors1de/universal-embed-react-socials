@@ -26,7 +26,7 @@ export const useAutoEmbedHeight = ({
   enabled?: boolean;
   fallback?: number;
   measureSrcDoc?: boolean;
-  measureSelector?: string;
+  resetKey?: string | number;
 } = {}) => ({
   height: fallback,
   measured: undefined as number | undefined,

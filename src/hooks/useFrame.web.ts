@@ -9,7 +9,7 @@ export const useFrame = (frame?: Frame): Frame =>
       return frame;
     }
     return {
-      document: typeof document !== 'undefined' ? document : undefined,
-      window: typeof window !== 'undefined' ? window : undefined,
+      document: typeof document !== 'undefined' ? (document as unknown as Frame['document']) : undefined,
+      window: typeof window !== 'undefined' ? (window as unknown as Frame['window']) : undefined,
     };
   }, [frame]);

@@ -12,6 +12,8 @@ import {
   resolveEmbedFrame,
   resolveEmbedMaxWidth,
 } from '../../utils/style';
+import { EMBED_FAILED_STAGE, EMBED_GIVE_UP_MS, EMBED_MAX_RETRIES } from '../../utils/embedLoad';
+import { ensureScript } from '../../utils/ensureScript';
 import { Subs } from '../../utils/subs';
 import { getTikTokVideoId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
@@ -59,13 +61,21 @@ const TikTokPlayerEmbed = ({
 }: TikTokEmbedProps): ReactElement => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
   const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const videoId = getTikTokVideoId(url);
 
   useEffect(() => {
-    if (embedDisabled) {
-      setReady(false);
+    setReady(false);
+    setFailed(false);
+  }, [url, embedDisabled]);
+
+  useEffect(() => {
+    if (embedDisabled || ready) {
+      return;
     }
-  }, [embedDisabled]);
-  const videoId = getTikTokVideoId(url);
+    const id = window.setTimeout(() => setFailed(true), EMBED_GIVE_UP_MS);
+    return () => window.clearTimeout(id);
+  }, [url, embedDisabled, ready]);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const autoHeight = height == null;
   const aspectFallback = aspectRatioHeight(
@@ -80,7 +90,7 @@ const TikTokPlayerEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,
@@ -112,6 +122,7 @@ const TikTokPlayerEmbed = ({
           {embedDisabled ? null : (
           <Box style={{ width: '100%', height: '100%', visibility: ready ? 'visible' : 'hidden' }}>
             <IFrame
+              key={videoId}
               src={buildTikTokPlayerSrc(videoId, tikTokProps)}
               width="100%"
               height="100%"
@@ -156,14 +167,23 @@ const TikTokOEmbed = ({
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(officialEmbedWidth, resolvedMaxWidth);
   const { disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy, boxRef);
   const [stage, setStage] = useState(PROCESS_EMBED_STAGE);
+  const [retryCount, setRetryCount] = useState(0);
   const placeholderId = useId();
   const [processTime, setProcessTime] = useState(0);
-  const embedContainerKey = `${placeholderId}-${processTime}`;
   const frm = useFrame(frame);
   const embedId = getTikTokVideoId(url);
+  const embedContainerKey = `${placeholderId}-${embedId}-${processTime}`;
   const { height: observedHeight, containerRef } = useAutoEmbedHeight({
     enabled: !embedDisabled && height == null,
+    resetKey: url,
   });
+  const failed = stage === EMBED_FAILED_STAGE;
+
+  useEffect(() => {
+    setStage(PROCESS_EMBED_STAGE);
+    setRetryCount(0);
+    setProcessTime(0);
+  }, [url, embedDisabled]);
 
   useEffect(() => {
     if (embedDisabled) {
@@ -173,20 +193,22 @@ const TikTokOEmbed = ({
   }, [debug, embedDisabled, stage]);
 
   useEffect(() => {
-    if (embedDisabled || stage !== PROCESS_EMBED_STAGE || !frm.document || scriptLoadDisabled) {
+    if (embedDisabled || stage !== PROCESS_EMBED_STAGE || !frm.document) {
+      return;
+    }
+    if (scriptLoadDisabled && !frm.document.getElementById('tiktok-embed-script')) {
+      setStage(EMBED_FAILED_STAGE);
       return;
     }
     const scriptId = 'tiktok-embed-script';
-    const prevScript = frm.document.getElementById(scriptId);
-    if (prevScript) {
-      prevScript.remove();
+    if (retryCount > 0 && !scriptLoadDisabled) {
+      frm.document.getElementById(scriptId)?.remove();
     }
-    const scriptElement = frm.document.createElement('script');
-    scriptElement.setAttribute('src', `https://www.tiktok.com/embed.js?t=${Date.now()}`);
-    scriptElement.setAttribute('id', scriptId);
-    frm.document.head.appendChild(scriptElement);
+    if (!scriptLoadDisabled) {
+      ensureScript(frm.document, scriptId, 'https://www.tiktok.com/embed.js');
+    }
     setStage(CONFIRM_EMBED_SUCCESS_STAGE);
-  }, [scriptLoadDisabled, stage, frm.document, embedDisabled]);
+  }, [scriptLoadDisabled, stage, retryCount, frm.document, embedDisabled]);
 
   useEffect(() => {
     if (embedDisabled) {
@@ -199,20 +221,25 @@ const TikTokOEmbed = ({
           setStage(EMBED_SUCCESS_STAGE);
         }
       }, 50);
-      if (!retryDisabled) {
+      if (retryDisabled || retryCount >= EMBED_MAX_RETRIES) {
+        subs.setTimeout(() => {
+          setStage(EMBED_FAILED_STAGE);
+        }, retryDelay);
+      } else {
         subs.setTimeout(() => {
           setStage(RETRYING_STAGE);
         }, retryDelay);
       }
     }
     return subs.createCleanup();
-  }, [placeholderId, retryDelay, retryDisabled, stage, frm.document, embedDisabled]);
+  }, [placeholderId, retryCount, retryDelay, retryDisabled, stage, frm.document, embedDisabled]);
 
   useEffect(() => {
     if (embedDisabled || stage !== RETRYING_STAGE) {
       return;
     }
     setProcessTime(Date.now());
+    setRetryCount((count) => count + 1);
     setStage(PROCESS_EMBED_STAGE);
   }, [stage, embedDisabled]);
 
@@ -223,7 +250,7 @@ const TikTokOEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,

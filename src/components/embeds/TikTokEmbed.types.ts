@@ -1,7 +1,7 @@
-import type { CommonEmbedProps } from '../../types';
-import type { Frame } from '../../hooks/useFrame';
+import type { CommonEmbedProps, Frame } from '../../types';
 import type { PlaceholderEmbedProps } from '../placeholder/PlaceholderEmbed.types';
 import { playerIframeHtml } from './playerIframeHtml';
+import { toQueryString } from '../../utils/query';
 
 /** Official Embed Player query flags. https://developers.tiktok.com/doc/embed-player */
 export type TikTokPlayerFlag = 0 | 1;
@@ -52,13 +52,7 @@ export const buildTikTokPlayerSrc = (
   videoId: string,
   playerVars: TikTokPlayerVars = {},
 ): string => {
-  const params = new URLSearchParams();
-  Object.entries(playerVars).forEach(([key, value]) => {
-    if (value !== undefined) {
-      params.set(key, String(value));
-    }
-  });
-  const query = params.toString();
+  const query = toQueryString(playerVars);
   return `${TIKTOK_PLAYER_HOST}/player/v1/${videoId}${query ? `?${query}` : ''}`;
 };
 

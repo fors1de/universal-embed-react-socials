@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import type {
   BoxProps,
   IFrameProps,
@@ -73,7 +74,7 @@ export const IFrame = ({
   iframeRef,
 }: IFrameProps) => (
   <iframe
-    ref={iframeRef}
+    ref={iframeRef as Ref<HTMLIFrameElement>}
     src={src}
     srcDoc={srcDoc}
     width={width}

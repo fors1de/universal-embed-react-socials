@@ -125,15 +125,21 @@ export const useAutoEmbedHeight = ({
   fallback,
   measureSrcDoc = false,
   measureSelector,
+  resetKey,
 }: {
   enabled?: boolean;
   fallback?: number;
   measureSrcDoc?: boolean;
   measureSelector?: string;
+  resetKey?: string | number;
 } = {}) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [measured, setMeasured] = useState<number | undefined>();
+
+  useEffect(() => {
+    setMeasured(undefined);
+  }, [resetKey]);
 
   useEffect(() => {
     if (!enabled || !measureSrcDoc) {
@@ -212,7 +218,7 @@ export const useAutoEmbedHeight = ({
       resizeObserver?.disconnect();
       mutationObserver?.disconnect();
     };
-  }, [enabled, measureSelector, measureSrcDoc]);
+  }, [enabled, measureSelector, measureSrcDoc, resetKey]);
 
   useEffect(() => {
     if (!enabled || measureSrcDoc) {
@@ -247,7 +253,7 @@ export const useAutoEmbedHeight = ({
       resizeObserver.disconnect();
       mutationObserver.disconnect();
     };
-  }, [enabled, measureSrcDoc]);
+  }, [enabled, measureSrcDoc, resetKey]);
 
   return {
     height: enabled ? (measured ?? fallback) : fallback,

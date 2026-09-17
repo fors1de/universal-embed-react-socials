@@ -11,9 +11,23 @@ export type {
 /** Custom loading UI, or a render function. Return `null` to reserve no space. */
 export type EmbedPlaceholder = ReactNode | (() => ReactNode);
 
+/** Browser realm for provider scripts. Structural so RN typecheck can run without DOM libs. */
+export interface FrameDocument {
+  getElementById(id: string): { querySelector(selectors: string): unknown; remove(): void } | null;
+  querySelector(selectors: string): unknown;
+  head: { appendChild(node: unknown): unknown };
+  createElement(tagName: string): {
+    setAttribute(name: string, value: string): void;
+    id: string;
+    src: string;
+    async: boolean;
+    remove(): void;
+  };
+}
+
 export interface Frame {
-  window?: Window;
-  document?: Document;
+  window?: typeof globalThis & Record<string, unknown>;
+  document?: FrameDocument;
 }
 
 export interface EmbedContainerProps {

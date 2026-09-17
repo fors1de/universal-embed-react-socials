@@ -15,6 +15,7 @@ export type {
   EmbedPlaceholder,
   EmbedWebViewMessageEvent,
   EmbedWebViewProps,
+  Frame,
 } from './types';
 export { DEFAULT_WEB_EMBED_WIDTH } from './utils/style';
 export {

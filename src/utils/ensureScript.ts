@@ -1,6 +1,8 @@
-export const ensureScript = (doc: Document, id: string, src: string): HTMLScriptElement => {
+import type { FrameDocument } from '../types';
+
+export const ensureScript = (doc: FrameDocument, id: string, src: string): unknown => {
   const existing = doc.getElementById(id);
-  if (existing instanceof HTMLScriptElement) {
+  if (existing) {
     return existing;
   }
   const script = doc.createElement('script');

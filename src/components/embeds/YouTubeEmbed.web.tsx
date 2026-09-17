@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, IFrame } from '../../host';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
+import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { aspectRatioHeight, collapsedEmbedStyle, embedMaxWidthStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
 import { getYouTubeStart, getYouTubeVideoId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
@@ -35,12 +36,20 @@ export const YouTubeEmbed = ({
 }: YouTubeEmbedProps) => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
   const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (embedDisabled) {
-      setReady(false);
+    setReady(false);
+    setFailed(false);
+  }, [url, embedDisabled]);
+
+  useEffect(() => {
+    if (embedDisabled || ready) {
+      return;
     }
-  }, [embedDisabled]);
+    const id = window.setTimeout(() => setFailed(true), EMBED_GIVE_UP_MS);
+    return () => window.clearTimeout(id);
+  }, [url, embedDisabled, ready]);
   const videoId = youTubeProps?.videoId ?? getYouTubeVideoId(url);
   const start = getYouTubeStart(url);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
@@ -62,7 +71,7 @@ export const YouTubeEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,
@@ -94,6 +103,7 @@ export const YouTubeEmbed = ({
           {embedDisabled ? null : (
           <Box style={{ width: '100%', height: '100%', visibility: ready ? 'visible' : 'hidden' }}>
             <IFrame
+              key={videoId}
               className={youTubeProps?.className ?? 'youtube-iframe'}
               src={src}
               width="100%"

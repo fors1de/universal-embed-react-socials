@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { IFrame } from '../../host';
 import { useResponsiveEmbedBox } from '../../hooks/useEmbedHeight';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
+import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { embedScaleStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { LINKEDIN_DESIGN_HEIGHT, LINKEDIN_DESIGN_WIDTH } from './embedHtml';
@@ -37,12 +38,20 @@ export const LinkedInEmbed = ({
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(LINKEDIN_DESIGN_WIDTH, resolvedMaxWidth);
   const { disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy, boxRef);
   const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (embedDisabled) {
-      setReady(false);
+    setReady(false);
+    setFailed(false);
+  }, [url, embedDisabled]);
+
+  useEffect(() => {
+    if (embedDisabled || ready) {
+      return;
     }
-  }, [embedDisabled]);
+    const id = window.setTimeout(() => setFailed(true), EMBED_GIVE_UP_MS);
+    return () => window.clearTimeout(id);
+  }, [url, embedDisabled, ready]);
   const { frameHeight: shellHeight, showPlaceholder } = resolveEmbedFrame({
     ready: !embedDisabled && ready,
     fallbackHeight: LINKEDIN_DESIGN_HEIGHT,
@@ -58,7 +67,7 @@ export const LinkedInEmbed = ({
     placeholderDisabled,
     placeholderImageUrl,
     placeholderSpinner,
-    placeholderSpinnerDisabled,
+    placeholderSpinnerDisabled: placeholderSpinnerDisabled || failed,
     placeholderProps,
     placeholderWidth,
     placeholderHeight,
@@ -88,6 +97,7 @@ export const LinkedInEmbed = ({
         <MediaFrame showPlaceholder={showPlaceholder && !placeholderDisabled} placeholder={resolvedPlaceholder}>
           {embedDisabled ? null : (
           <IFrame
+            key={url}
             className="linkedin-post"
             src={url}
             width={LINKEDIN_DESIGN_WIDTH}
