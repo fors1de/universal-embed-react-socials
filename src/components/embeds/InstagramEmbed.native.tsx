@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { DEFAULT_INSTAGRAM_API_VERSION, normalizeInstagramApiVersion } from '../../utils/apiVersion';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { getCleanInstagramUrl } from '../../utils/urls';
 import { instagramEmbedHtml } from './embedHtml';
 import {
@@ -19,22 +20,33 @@ export const InstagramEmbed = ({
   captioned = false,
   apiVersion = DEFAULT_INSTAGRAM_API_VERSION,
   placeholderText = 'View post on Instagram',
+  onError,
+  embedDisabled,
   ...props
 }: InstagramEmbedProps) => {
   const resolvedVersion = normalizeInstagramApiVersion(apiVersion);
   const cleanUrl = getCleanInstagramUrl(props.url);
+  const reportError = useEmbedOnError(onError, props.url);
+  useEffect(() => {
+    if (!cleanUrl && !embedDisabled) {
+      reportError('invalid-url');
+    }
+  }, [cleanUrl, embedDisabled, reportError]);
   const html = useMemo(
-    () => instagramEmbedHtml({ url: cleanUrl, apiVersion: resolvedVersion, captioned }),
+    () =>
+      cleanUrl ? instagramEmbedHtml({ url: cleanUrl, apiVersion: resolvedVersion, captioned }) : undefined,
     [captioned, cleanUrl, resolvedVersion],
   );
   return (
     <NativeSocialEmbed
       {...props}
-      url={cleanUrl}
+      url={cleanUrl ?? props.url}
+      embedDisabled={embedDisabled || !cleanUrl}
       placeholderText={placeholderText}
       html={html}
       baseUrl="https://www.instagram.com"
       fallbackHeight={captioned ? INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT : INSTAGRAM_PLACEHOLDER_HEIGHT}
+      onError={onError}
     />
   );
 };

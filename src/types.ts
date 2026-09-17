@@ -9,7 +9,7 @@ export type {
 } from "./webviewProps";
 
 /** Why the embed gave up. Iframe embeds often still fire load for a deleted post. */
-export type EmbedErrorReason = 'timeout' | 'script-missing' | 'unavailable' | 'load-failed';
+export type EmbedErrorReason = 'timeout' | 'script-missing' | 'unavailable' | 'load-failed' | 'invalid-url';
 
 export interface EmbedError {
   url: string;

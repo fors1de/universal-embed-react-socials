@@ -48,8 +48,19 @@ export const YouTubeEmbed = ({
     setFailed(false);
   }, [url, embedDisabled]);
 
+  const videoId = youTubeProps?.videoId || getYouTubeVideoId(url);
+  const start = getYouTubeStart(url);
+
   useEffect(() => {
-    if (embedDisabled || ready) {
+    if (embedDisabled || videoId) {
+      return;
+    }
+    setFailed(true);
+    reportError('invalid-url');
+  }, [embedDisabled, reportError, videoId]);
+
+  useEffect(() => {
+    if (embedDisabled || ready || !videoId) {
       return;
     }
     const id = window.setTimeout(() => {
@@ -57,9 +68,7 @@ export const YouTubeEmbed = ({
       reportError('timeout');
     }, EMBED_GIVE_UP_MS);
     return () => window.clearTimeout(id);
-  }, [url, embedDisabled, ready]);
-  const videoId = youTubeProps?.videoId ?? getYouTubeVideoId(url);
-  const start = getYouTubeStart(url);
+  }, [url, embedDisabled, ready, videoId]);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const percentageHeight = isPercentage(height);
   const autoHeight = height == null && youTubeProps?.opts?.height == null;
@@ -70,7 +79,7 @@ export const YouTubeEmbed = ({
     ...(start ? { start } : {}),
     ...youTubeProps?.opts?.playerVars,
   };
-  const src = buildYouTubeSrc(videoId, playerVars);
+  const src = videoId ? buildYouTubeSrc(videoId, playerVars) : '';
 
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url,
@@ -110,7 +119,7 @@ export const YouTubeEmbed = ({
         }}
       >
         <MediaFrame showPlaceholder={(!ready || embedDisabled) && hasPlaceholder} placeholder={resolvedPlaceholder}>
-          {embedDisabled ? null : (
+          {embedDisabled || !videoId ? null : (
           <Box style={{ width: '100%', height: '100%', visibility: ready ? 'visible' : 'hidden' }}>
             <IFrame
               key={videoId}

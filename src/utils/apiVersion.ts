@@ -2,6 +2,7 @@ export const DEFAULT_FACEBOOK_API_VERSION = 'v26.0';
 export const DEFAULT_INSTAGRAM_API_VERSION = '14';
 export const DEFAULT_FACEBOOK_LOCALE = 'en_US';
 
+/** Unrecognised values fall back to `DEFAULT_FACEBOOK_API_VERSION`. */
 export const normalizeFacebookApiVersion = (version: string = DEFAULT_FACEBOOK_API_VERSION): string => {
   const trimmed = version.trim();
   if (/^v\d+\.\d+$/.test(trimmed)) {
@@ -16,7 +17,7 @@ export const normalizeFacebookApiVersion = (version: string = DEFAULT_FACEBOOK_A
   if (/^\d+$/.test(trimmed)) {
     return `v${trimmed}.0`;
   }
-  return trimmed;
+  return DEFAULT_FACEBOOK_API_VERSION;
 };
 
 export const normalizeInstagramApiVersion = (

@@ -42,7 +42,7 @@ export const XEmbed = ({
   id,
   testID,
 }: XEmbedProps) => {
-  const postId = twitterTweetEmbedProps?.tweetId ?? getXPostId(url);
+  const postId = twitterTweetEmbedProps?.tweetId || getXPostId(url);
   const onLoad = twitterTweetEmbedProps?.onLoad;
   const onLoadRef = useRef(onLoad);
   onLoadRef.current = onLoad;
@@ -71,6 +71,11 @@ export const XEmbed = ({
     setReady(false);
     setFailed(false);
     if (embedDisabled) {
+      return;
+    }
+    if (!postId) {
+      setFailed(true);
+      reportError('invalid-url');
       return;
     }
     const win = frm.window as typeof globalThis & {
@@ -156,7 +161,7 @@ export const XEmbed = ({
         style={{ position: 'relative', ...style }}
       >
         <div ref={containerRef} style={{ width: '100%' }}>
-          {embedDisabled ? null : (
+          {embedDisabled || !postId ? null : (
             <Box id={embedId} key={postId}>
               <blockquote className="twitter-tweet" data-width={officialEmbedWidth}>
                 <a href={`https://twitter.com/i/status/${postId}`}>{placeholderText}</a>

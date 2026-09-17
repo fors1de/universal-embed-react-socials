@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Linking } from 'react-native';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { getTikTokVideoId } from '../../utils/urls';
 import { resolveTikTokBrowserUrl } from '../../utils/tiktokUrls';
 import { withTikTokProfileLinks } from '../../utils/tiktokProfileLinks';
@@ -29,12 +30,21 @@ export const TikTokEmbed = ({
   allowsFullscreenVideo,
   tikTokProps,
   height,
+  onError,
+  embedDisabled,
   ...props
 }: TikTokEmbedProps) => {
   const videoId = getTikTokVideoId(url);
+  const reportError = useEmbedOnError(onError, url);
+  useEffect(() => {
+    if (!videoId && !embedDisabled) {
+      reportError('invalid-url');
+    }
+  }, [embedDisabled, reportError, videoId]);
   const usePlayer = usesTikTokPlayer(allowsFullscreenVideo, tikTokProps);
   const html = useMemo(
-    () => (usePlayer ? buildTikTokPlayerHtml(buildTikTokPlayerSrc(videoId, tikTokProps)) : undefined),
+    () =>
+      usePlayer && videoId ? buildTikTokPlayerHtml(buildTikTokPlayerSrc(videoId, tikTokProps)) : undefined,
     [tikTokProps, usePlayer, videoId],
   );
   return (
@@ -42,7 +52,9 @@ export const TikTokEmbed = ({
       {...props}
       url={url}
       height={height}
+      embedDisabled={embedDisabled || !videoId}
       placeholderText={placeholderText}
+      onError={onError}
       {...(usePlayer
         ? {
             html,
@@ -50,7 +62,7 @@ export const TikTokEmbed = ({
             aspectRatio: height == null ? TIKTOK_PLAYER_ASPECT_RATIO : undefined,
             allowsFullscreenVideo: allowsFullscreenVideo !== false,
           }
-        : { uri: `https://www.tiktok.com/embed/v2/${videoId}` })}
+        : { uri: videoId ? `https://www.tiktok.com/embed/v2/${videoId}` : undefined })}
       fallbackHeight={usePlayer ? TIKTOK_PLAYER_FALLBACK_HEIGHT : defaultPlaceholderHeight}
       allowsInlineMediaPlayback
       openLinksInBrowser={openLinksInBrowser}

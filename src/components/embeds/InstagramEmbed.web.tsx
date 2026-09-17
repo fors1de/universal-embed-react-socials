@@ -101,6 +101,11 @@ export const InstagramEmbed = ({
     if (embedDisabled || stage !== CHECK_SCRIPT_STAGE) {
       return;
     }
+    if (!cleanUrlWithEndingSlash) {
+      setStage(EMBED_FAILED_STAGE);
+      reportError('invalid-url');
+      return;
+    }
     if (instagramProcess(frm.window)) {
       setStage(PROCESS_EMBED_STAGE);
     } else if (!scriptLoadDisabled) {
@@ -240,7 +245,7 @@ export const InstagramEmbed = ({
       style={{ position: 'relative', ...style }}
     >
       <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
-      {embedDisabled ? null : (
+      {embedDisabled || !cleanUrlWithEndingSlash ? null : (
       <Box key={embedContainerKey}>
       <blockquote
         className="instagram-media"

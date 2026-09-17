@@ -75,7 +75,15 @@ const TikTokPlayerEmbed = ({
   }, [url, embedDisabled]);
 
   useEffect(() => {
-    if (embedDisabled || ready) {
+    if (embedDisabled || videoId) {
+      return;
+    }
+    setFailed(true);
+    reportError('invalid-url');
+  }, [embedDisabled, reportError, videoId]);
+
+  useEffect(() => {
+    if (embedDisabled || ready || !videoId) {
       return;
     }
     const id = window.setTimeout(() => {
@@ -83,7 +91,7 @@ const TikTokPlayerEmbed = ({
       reportError('timeout');
     }, EMBED_GIVE_UP_MS);
     return () => window.clearTimeout(id);
-  }, [url, embedDisabled, ready]);
+  }, [url, embedDisabled, ready, videoId]);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const autoHeight = height == null;
   const aspectFallback = aspectRatioHeight(
@@ -129,7 +137,7 @@ const TikTokPlayerEmbed = ({
         }}
       >
         <MediaFrame showPlaceholder={(!ready || embedDisabled) && hasPlaceholder} placeholder={resolvedPlaceholder}>
-          {embedDisabled ? null : (
+          {embedDisabled || !videoId ? null : (
           <Box style={{ width: '100%', height: '100%', visibility: ready ? 'visible' : 'hidden' }}>
             <IFrame
               key={videoId}
@@ -212,6 +220,11 @@ const TikTokOEmbed = ({
 
   useEffect(() => {
     if (embedDisabled || stage !== PROCESS_EMBED_STAGE || !frm.document) {
+      return;
+    }
+    if (!embedId) {
+      setStage(EMBED_FAILED_STAGE);
+      reportError('invalid-url');
       return;
     }
     if (scriptLoadDisabled && !frm.document.getElementById('tiktok-embed-script')) {
@@ -305,7 +318,7 @@ const TikTokOEmbed = ({
     <div ref={boxRef} style={boxStyle}>
     <EmbedShell id={id} testID={testID} className={className} extraClassName="rsme-tiktok-embed" width="100%" height={frameHeight} borderRadius={borderRadius} style={{ position: 'relative', ...style }}>
       <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
-      {embedDisabled ? null : (
+      {embedDisabled || !embedId ? null : (
       <Box key={embedContainerKey} className="tiktok-embed-container">
         <blockquote className="tiktok-embed" cite={url} data-video-id={embedId}>
           <section>

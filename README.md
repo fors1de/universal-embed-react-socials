@@ -118,7 +118,7 @@ import { YouTubeEmbed } from "@fors1de/universal-embed-react-socials";
 <YouTubeEmbed url="https://www.youtube.com/watch?v=HpVOs5imUN0" />;
 ```
 
-Shorts (`youtube.com/shorts/ID`) and `youtu.be` links work. Extra player options go through `youTubeProps.opts.playerVars`.
+Shorts (`youtube.com/shorts/ID`) and `youtu.be` links work. Extra player options go through `youTubeProps.opts.playerVars`. Start time is read from `start=` or `t=` (`90`, `90s`, `1m30s`).
 
 ## React vs React Native
 
@@ -167,7 +167,7 @@ Every embed accepts:
 - `webViewProps` (React Native only)
 - `openLinksInBrowser` (React Native only) — open tapped embed links in the system browser. Defaults to `true`. Ignored on web.
 - `iframeSandbox` (web only) — opt-in iframe `sandbox` for Facebook and Pinterest `blob:` embeds. See [Trust boundaries](#trust-boundaries).
-- `onError` — called once if the embed cannot load (`timeout`, `script-missing`, `unavailable`, or native `load-failed`). Deleted iframe posts often still load an error page, so they may not fire.
+- `onError` — called once if the embed cannot load (`timeout`, `script-missing`, `unavailable`, `invalid-url`, or native `load-failed`). Deleted iframe posts often still load an error page, so they may not fire.
 
 Provider-specific:
 
