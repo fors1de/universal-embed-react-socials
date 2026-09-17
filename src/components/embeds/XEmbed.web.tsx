@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Box } from '../../host';
 import { useAutoEmbedHeight } from '../../hooks/useEmbedHeight';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
@@ -38,6 +38,9 @@ export const XEmbed = ({
   style,
 }: XEmbedProps) => {
   const postId = twitterTweetEmbedProps?.tweetId ?? getXPostId(url);
+  const onLoad = twitterTweetEmbedProps?.onLoad;
+  const onLoadRef = useRef(onLoad);
+  onLoadRef.current = onLoad;
   const [ready, setReady] = useState(false);
   const embedId = useId();
   const frm = useFrame();
@@ -80,12 +83,12 @@ export const XEmbed = ({
       const root = doc.getElementById(embedId);
       if (root?.querySelector('iframe')) {
         setReady(true);
-        twitterTweetEmbedProps?.onLoad?.();
+        onLoadRef.current?.();
         cleanup();
       }
     }, 50);
     return cleanup;
-  }, [embedId, frm.document, frm.window, postId, embedDisabled, twitterTweetEmbedProps?.onLoad]);
+  }, [embedId, frm.document, frm.window, postId, embedDisabled]);
 
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url,
