@@ -47,7 +47,6 @@ export const nativeAutoHeightScript = `
       if (window.__rsmeAh || !document.body || !document.head) {
         return;
       }
-      window.__rsmeAh = 1;
       var lastHeight = 0;
       var heightTheSameTimes = 0;
       var maxHeightTheSameTimes = 5;
@@ -138,6 +137,7 @@ export const nativeAutoHeightScript = `
         new Observer(scheduleUpdate).observe(wrapper, { childList: true, subtree: true, attributes: true });
       }
       updateSize();
+      window.__rsmeAh = 1;
     }
 
     // Document-start injection has no body yet; wrapping then left auto-height dead.
