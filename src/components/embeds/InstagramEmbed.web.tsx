@@ -234,8 +234,8 @@ export const InstagramEmbed = ({
     >
       <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
       {embedDisabled ? null : (
+      <Box key={embedContainerKey}>
       <blockquote
-        key={embedContainerKey}
         className="instagram-media"
         data-instgrm-permalink={`${cleanUrlWithEndingSlash}?utm_source=ig_embed&utm_campaign=loading`}
         data-instgrm-version={resolvedVersion}
@@ -247,6 +247,7 @@ export const InstagramEmbed = ({
           &nbsp;
         </div>
       </blockquote>
+      </Box>
       )}
       </div>
       {showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null ? (

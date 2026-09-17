@@ -217,7 +217,7 @@ const TikTokOEmbed = ({
       ensureScript(frm.document, scriptId, 'https://www.tiktok.com/embed.js');
     }
     setStage(CONFIRM_EMBED_SUCCESS_STAGE);
-  }, [scriptLoadDisabled, stage, retryCount, frm.document, embedDisabled]);
+  }, [scriptLoadDisabled, stage, retryCount, frm.document, embedDisabled, embedId]);
 
   useEffect(() => {
     if (embedDisabled) {
@@ -293,8 +293,8 @@ const TikTokOEmbed = ({
     <EmbedShell className={className} extraClassName="rsme-tiktok-embed" width="100%" height={frameHeight} borderRadius={borderRadius} style={{ position: 'relative', ...style }}>
       <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
       {embedDisabled ? null : (
-      <Box className="tiktok-embed-container">
-        <blockquote key={embedContainerKey} className="tiktok-embed" cite={url} data-video-id={embedId}>
+      <Box key={embedContainerKey} className="tiktok-embed-container">
+        <blockquote className="tiktok-embed" cite={url} data-video-id={embedId}>
           <section>
             <a href={url}>{placeholderText}</a>
           </section>
