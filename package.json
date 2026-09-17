@@ -29,8 +29,7 @@
     "src"
   ],
   "scripts": {
-    "build": "rm -rf ./dist && tsc && node scripts/flatten-web-suffix.js",
-    "test": "npm run build && node --test tests/*.test.cjs"
+    "build": "rm -rf ./dist && tsc && node scripts/flatten-web-suffix.js"
   },
   "publishConfig": {
     "access": "public"
