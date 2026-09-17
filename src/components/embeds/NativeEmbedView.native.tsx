@@ -7,6 +7,7 @@ import type {
   EmbedWebViewOpenWindowEvent,
 } from '../../types';
 import { toNativeSize } from '../../utils/style';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import {
   AUTO_HEIGHT_TOPIC,
   injectAutoHeightScript,
@@ -99,6 +100,8 @@ export const NativeEmbedView = ({
   openLinksInBrowser = true,
   resolveExternalUrl,
   webViewProps,
+  url = '',
+  onError,
 }: NativeEmbedViewProps) => {
   const webViewRef = useRef<WebView>(null);
   const wrapRef = useRef<View>(null);
@@ -110,6 +113,7 @@ export const NativeEmbedView = ({
   const hasPlaceholder = placeholder != null && !placeholderDisabled;
   const blocked = embedDisabled || (lazy && !lazyVisible);
   const lazyCheckRef = useRef(() => {});
+  const reportError = useEmbedOnError(onError, url);
 
   useEffect(() => {
     setReady(false);
@@ -191,6 +195,7 @@ export const NativeEmbedView = ({
     style: webViewStyle,
     onLoad,
     onMessage,
+    onError: onWebViewError,
     injectedJavaScript,
     source: _source,
     onShouldStartLoadWithRequest,
@@ -308,6 +313,10 @@ export const NativeEmbedView = ({
             onLoad={(event: unknown) => {
               setReady(true);
               onLoad?.(event);
+            }}
+            onError={(event: unknown) => {
+              reportError('load-failed');
+              onWebViewError?.(event);
             }}
             onContentProcessDidTerminate={() => {
               webViewRef.current?.reload();

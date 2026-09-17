@@ -8,6 +8,14 @@ export type {
   EmbedWebViewProps,
 } from "./webviewProps";
 
+/** Why the embed gave up. Iframe embeds often still fire load for a deleted post. */
+export type EmbedErrorReason = 'timeout' | 'script-missing' | 'unavailable' | 'load-failed';
+
+export interface EmbedError {
+  url: string;
+  reason: EmbedErrorReason;
+}
+
 /** Custom loading UI, or a render function. Return `null` to reserve no space. */
 export type EmbedPlaceholder = ReactNode | (() => ReactNode);
 
@@ -82,4 +90,6 @@ export interface CommonEmbedProps extends EmbedContainerProps {
    * sizes via `postMessage`. Pass a string for custom sandbox tokens.
    */
   iframeSandbox?: boolean | string;
+  /** Called once when the embed cannot load. Identity is not used as a reset key. */
+  onError?: (error: EmbedError) => void;
 }

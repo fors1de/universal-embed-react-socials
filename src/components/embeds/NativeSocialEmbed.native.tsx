@@ -27,6 +27,7 @@ export const NativeSocialEmbed = ({
   openLinksInBrowser = true,
   fallbackHeight,
   placeholderUrl,
+  iframeSandbox: _iframeSandbox,
   ...viewProps
 }: NativeSocialEmbedProps) => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
@@ -69,6 +70,7 @@ export const NativeSocialEmbed = ({
   return (
     <NativeEmbedView
       {...viewProps}
+      url={url}
       width={resolvedMaxWidth}
       height={height}
       style={style}

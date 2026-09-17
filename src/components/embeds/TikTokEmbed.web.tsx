@@ -1,6 +1,7 @@
 import { useEffect, useId, useState, type ReactElement } from 'react';
 import { Box, IFrame } from '../../host';
 import { useAutoEmbedHeight, useResponsiveEmbedBox } from '../../hooks/useEmbedHeight';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { useFrame } from '../../hooks/useFrame';
 import {
@@ -56,10 +57,12 @@ const TikTokPlayerEmbed = ({
   embedDisabled: embedDisabledProp = false,
   lazy = false,
   tikTokProps,
+  onError,
   className,
   style,
 }: TikTokEmbedProps): ReactElement => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
+  const reportError = useEmbedOnError(onError, url);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const videoId = getTikTokVideoId(url);
@@ -73,7 +76,10 @@ const TikTokPlayerEmbed = ({
     if (embedDisabled || ready) {
       return;
     }
-    const id = window.setTimeout(() => setFailed(true), EMBED_GIVE_UP_MS);
+    const id = window.setTimeout(() => {
+      setFailed(true);
+      reportError('timeout');
+    }, EMBED_GIVE_UP_MS);
     return () => window.clearTimeout(id);
   }, [url, embedDisabled, ready]);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
@@ -160,12 +166,14 @@ const TikTokOEmbed = ({
   retryDisabled = false,
   frame = undefined,
   debug = false,
+  onError,
   className,
   style,
 }: TikTokEmbedProps): ReactElement => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(officialEmbedWidth, resolvedMaxWidth);
   const { disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy, boxRef);
+  const reportError = useEmbedOnError(onError, url);
   const [stage, setStage] = useState(PROCESS_EMBED_STAGE);
   const [retryCount, setRetryCount] = useState(0);
   const placeholderId = useId();
@@ -198,6 +206,7 @@ const TikTokOEmbed = ({
     }
     if (scriptLoadDisabled && !frm.document.getElementById('tiktok-embed-script')) {
       setStage(EMBED_FAILED_STAGE);
+      reportError('script-missing');
       return;
     }
     const scriptId = 'tiktok-embed-script';
@@ -224,6 +233,7 @@ const TikTokOEmbed = ({
       if (retryDisabled || retryCount >= EMBED_MAX_RETRIES) {
         subs.setTimeout(() => {
           setStage(EMBED_FAILED_STAGE);
+          reportError('unavailable');
         }, retryDelay);
       } else {
         subs.setTimeout(() => {

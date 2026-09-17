@@ -12,6 +12,8 @@ export * from './hooks/useFrame';
 export { parseEmbedHeight, useAutoEmbedHeight } from './hooks/useEmbedHeight';
 export type {
   CommonEmbedProps,
+  EmbedError,
+  EmbedErrorReason,
   EmbedPlaceholder,
   EmbedWebViewMessageEvent,
   EmbedWebViewProps,

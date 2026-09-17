@@ -164,6 +164,7 @@ Every embed accepts:
 - `webViewProps` (React Native only)
 - `openLinksInBrowser` (React Native only) — open tapped embed links in the system browser. Defaults to `true`. Ignored on web.
 - `iframeSandbox` (web only) — opt-in iframe `sandbox` for Facebook and Pinterest `blob:` embeds. See [Trust boundaries](#trust-boundaries).
+- `onError` — called once if the embed cannot load (`timeout`, `script-missing`, `unavailable`, or native `load-failed`). Deleted iframe posts often still load an error page, so they may not fire.
 
 ```jsx
 <InstagramEmbed

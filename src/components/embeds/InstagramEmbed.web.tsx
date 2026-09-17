@@ -3,6 +3,7 @@ import { Box } from '../../host';
 import { useAutoEmbedHeight, useResponsiveEmbedBox } from '../../hooks/useEmbedHeight';
 import { useFrame } from '../../hooks/useFrame';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { DEFAULT_INSTAGRAM_API_VERSION, normalizeInstagramApiVersion } from '../../utils/apiVersion';
 import { classNames } from '../../utils/classNames';
 import { EMBED_FAILED_STAGE, EMBED_MAX_RETRIES } from '../../utils/embedLoad';
@@ -63,6 +64,7 @@ export const InstagramEmbed = ({
   apiVersion = DEFAULT_INSTAGRAM_API_VERSION,
   frame = undefined,
   debug = false,
+  onError,
   className,
   style,
 }: InstagramEmbedProps): ReactElement => {
@@ -77,6 +79,7 @@ export const InstagramEmbed = ({
   const [processTime, setProcessTime] = useState(0);
   const embedContainerKey = `${embedId}-${cleanUrlWithEndingSlash}-${processTime}`;
   const frm = useFrame(frame);
+  const reportError = useEmbedOnError(onError, url);
   const failed = stage === EMBED_FAILED_STAGE;
 
   useEffect(() => {
@@ -103,6 +106,7 @@ export const InstagramEmbed = ({
     } else {
       console.error('Instagram embed script not found. Unable to process Instagram embed:', url);
       setStage(EMBED_FAILED_STAGE);
+      reportError('script-missing');
     }
   }, [scriptLoadDisabled, stage, url, frm.window, embedDisabled]);
 
@@ -127,6 +131,7 @@ export const InstagramEmbed = ({
       }, 50);
       subs.setTimeout(() => {
         setStage(EMBED_FAILED_STAGE);
+        reportError('script-missing');
       }, retryDelay);
     }
     return subs.createCleanup();
@@ -143,6 +148,7 @@ export const InstagramEmbed = ({
     } else {
       console.error('Instagram embed script not found. Unable to process Instagram embed:', url);
       setStage(EMBED_FAILED_STAGE);
+      reportError('script-missing');
     }
   }, [stage, frm.window, url, embedDisabled]);
 
@@ -158,9 +164,12 @@ export const InstagramEmbed = ({
         }
       }, 50);
       subs.setTimeout(() => {
-        setStage(
-          retryDisabled || retryCount >= EMBED_MAX_RETRIES ? EMBED_FAILED_STAGE : RETRYING_STAGE,
-        );
+        if (retryDisabled || retryCount >= EMBED_MAX_RETRIES) {
+          setStage(EMBED_FAILED_STAGE);
+          reportError('unavailable');
+        } else {
+          setStage(RETRYING_STAGE);
+        }
       }, retryDelay);
     }
     return subs.createCleanup();

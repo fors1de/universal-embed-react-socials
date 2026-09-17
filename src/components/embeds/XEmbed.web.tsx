@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Box } from '../../host';
 import { useAutoEmbedHeight } from '../../hooks/useEmbedHeight';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { ensureScript } from '../../utils/ensureScript';
@@ -35,6 +36,7 @@ export const XEmbed = ({
   embedDisabled: embedDisabledProp = false,
   lazy = false,
   twitterTweetEmbedProps,
+  onError,
   className,
   style,
 }: XEmbedProps) => {
@@ -42,6 +44,7 @@ export const XEmbed = ({
   const onLoad = twitterTweetEmbedProps?.onLoad;
   const onLoadRef = useRef(onLoad);
   onLoadRef.current = onLoad;
+  const reportError = useEmbedOnError(onError, url);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const embedId = useId();
@@ -95,6 +98,7 @@ export const XEmbed = ({
     }, 50);
     subs.setTimeout(() => {
       setFailed(true);
+      reportError('unavailable');
       cleanup();
     }, EMBED_GIVE_UP_MS);
     return cleanup;

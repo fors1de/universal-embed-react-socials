@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, IFrame } from '../../host';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { aspectRatioHeight, collapsedEmbedStyle, embedMaxWidthStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
@@ -31,10 +32,12 @@ export const YouTubeEmbed = ({
   embedDisabled: embedDisabledProp = false,
   lazy = false,
   youTubeProps,
+  onError,
   className,
   style,
 }: YouTubeEmbedProps) => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
+  const reportError = useEmbedOnError(onError, url);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -47,7 +50,10 @@ export const YouTubeEmbed = ({
     if (embedDisabled || ready) {
       return;
     }
-    const id = window.setTimeout(() => setFailed(true), EMBED_GIVE_UP_MS);
+    const id = window.setTimeout(() => {
+      setFailed(true);
+      reportError('timeout');
+    }, EMBED_GIVE_UP_MS);
     return () => window.clearTimeout(id);
   }, [url, embedDisabled, ready]);
   const videoId = youTubeProps?.videoId ?? getYouTubeVideoId(url);

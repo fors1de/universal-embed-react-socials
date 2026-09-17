@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { EmbedWebViewProps } from '../../types';
+import type { EmbedError, EmbedWebViewProps } from '../../types';
 
 export interface NativeEmbedViewProps {
   html?: string;
@@ -26,4 +26,6 @@ export interface NativeEmbedViewProps {
   /** Provider-specific normalization before opening an external browser. */
   resolveExternalUrl?: (url: string) => string;
   webViewProps?: EmbedWebViewProps;
+  url?: string;
+  onError?: (error: EmbedError) => void;
 }

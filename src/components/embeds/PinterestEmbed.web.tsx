@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { IFrame } from '../../host';
+import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { resolveIframeSandbox } from '../../utils/iframeSandbox';
@@ -33,10 +34,12 @@ export const PinterestEmbed = ({
   embedDisabled: embedDisabledProp = false,
   lazy = false,
   iframeSandbox,
+  onError,
   className,
   style,
 }: PinterestEmbedProps) => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
+  const reportError = useEmbedOnError(onError, url);
   const sandbox = resolveIframeSandbox(iframeSandbox);
   const embedId = useId();
   const postHref = postUrl ?? url;
@@ -87,7 +90,10 @@ export const PinterestEmbed = ({
     if (embedDisabled || pinHeight > 0) {
       return;
     }
-    const id = window.setTimeout(() => setFailed(true), EMBED_GIVE_UP_MS);
+    const id = window.setTimeout(() => {
+      setFailed(true);
+      reportError('timeout');
+    }, EMBED_GIVE_UP_MS);
     return () => window.clearTimeout(id);
   }, [embedDisabled, embedHtml, pinHeight]);
 
