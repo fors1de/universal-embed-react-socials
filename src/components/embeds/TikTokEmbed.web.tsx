@@ -243,7 +243,7 @@ const TikTokOEmbed = ({
   const videoHeight =
     observedHeight != null && observedHeight >= tiktokContentMinHeight ? observedHeight : undefined;
   const { frameHeight, showPlaceholder } = resolveEmbedFrame({
-    ready: embedReady && videoHeight != null,
+    ready: embedReady,
     measuredHeight: videoHeight,
     fallbackHeight: defaultPlaceholderHeight,
     scale,
