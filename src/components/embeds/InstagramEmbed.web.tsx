@@ -17,12 +17,14 @@ import {
   INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT,
   INSTAGRAM_PLACEHOLDER_HEIGHT,
   type InstagramEmbedProps,
+  type InstagramEmbedWebProps,
 } from './InstagramEmbed.types';
 
 export {
   INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT,
   INSTAGRAM_PLACEHOLDER_HEIGHT,
   type InstagramEmbedProps,
+  type InstagramEmbedWebProps,
 };
 
 const officialEmbedWidth = 550;
@@ -69,7 +71,7 @@ export const InstagramEmbed = ({
   style,
   id,
   testID,
-}: InstagramEmbedProps): ReactElement => {
+}: InstagramEmbedProps & InstagramEmbedWebProps): ReactElement => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(officialEmbedWidth, resolvedMaxWidth);
   const { disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy, boxRef);

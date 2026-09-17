@@ -16,6 +16,8 @@ React Native also needs:
 npm i react-native-webview
 ```
 
+TikTok in-app link handling parses URLs without `URL.searchParams`, so `react-native-url-polyfill` is not required.
+
 ## Usage
 
 On web, embeds are `width: 100%` of their container by default. Pass `maxWidth` only when you want a cap.
@@ -197,7 +199,7 @@ Opt in to near-viewport loading with `lazy` (default is off, so embeds still loa
 />
 ```
 
-Instagram and TikTok also support `scriptLoadDisabled`, `retryDelay`, `retryDisabled`, `frame`, and `debug`.
+Instagram and TikTok on **web** also support `scriptLoadDisabled`, `retryDelay`, `retryDisabled`, `frame`, and `debug`. Those props are ignored on React Native.
 
 ## Trust boundaries
 

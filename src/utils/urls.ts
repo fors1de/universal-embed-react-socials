@@ -1,20 +1,6 @@
-const parseHttpUrl = (value: string): URL | undefined => {
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return undefined;
-  }
-  try {
-    return new URL(trimmed);
-  } catch {
-    try {
-      return new URL(`https://${trimmed}`);
-    } catch {
-      return undefined;
-    }
-  }
-};
+import { getQueryParam, parseUrl } from './parseUrl';
 
-const pathSegments = (url: URL): string[] => url.pathname.split('/').filter(Boolean);
+const pathSegments = (pathname: string): string[] => pathname.split('/').filter(Boolean);
 
 const segmentAfter = (segments: string[], names: readonly string[]): string | undefined => {
   const wanted = new Set(names.map((name) => name.toLowerCase()));
@@ -24,12 +10,12 @@ const segmentAfter = (segments: string[], names: readonly string[]): string | un
 };
 
 export const getYouTubeVideoId = (url: string): string | undefined => {
-  const parsed = parseHttpUrl(url);
+  const parsed = parseUrl(url);
   if (!parsed) {
     return undefined;
   }
-  const host = parsed.hostname.replace(/^www\./i, '').toLowerCase();
-  const segs = pathSegments(parsed);
+  const host = parsed.hostname.replace(/^www\./i, '');
+  const segs = pathSegments(parsed.pathname);
   if (host === 'youtu.be') {
     return segs[0] || undefined;
   }
@@ -39,7 +25,7 @@ export const getYouTubeVideoId = (url: string): string | undefined => {
     host === 'music.youtube.com' ||
     host === 'youtube-nocookie.com'
   ) {
-    const fromQuery = parsed.searchParams.get('v');
+    const fromQuery = getQueryParam(parsed.search, 'v');
     if (fromQuery) {
       return fromQuery;
     }
@@ -48,7 +34,7 @@ export const getYouTubeVideoId = (url: string): string | undefined => {
   return undefined;
 };
 
-const parseYouTubeTimestamp = (value: string | null): number => {
+const parseYouTubeTimestamp = (value: string | undefined): number => {
   if (!value) {
     return 0;
   }
@@ -64,47 +50,47 @@ const parseYouTubeTimestamp = (value: string | null): number => {
 
 /** Seconds from `start=` or `t=` (`90`, `90s`, `1m30s`). */
 export const getYouTubeStart = (url: string): number => {
-  const parsed = parseHttpUrl(url);
+  const parsed = parseUrl(url);
   if (!parsed) {
     return 0;
   }
-  const start = parseYouTubeTimestamp(parsed.searchParams.get('start'));
+  const start = parseYouTubeTimestamp(getQueryParam(parsed.search, 'start'));
   if (start > 0) {
     return start;
   }
-  return parseYouTubeTimestamp(parsed.searchParams.get('t'));
+  return parseYouTubeTimestamp(getQueryParam(parsed.search, 't'));
 };
 
 export const getXPostId = (url: string): string | undefined => {
-  const parsed = parseHttpUrl(url);
+  const parsed = parseUrl(url);
   if (!parsed) {
     return undefined;
   }
-  return segmentAfter(pathSegments(parsed), ['status']);
+  return segmentAfter(pathSegments(parsed.pathname), ['status']);
 };
 
 export const getTikTokVideoId = (url: string): string | undefined => {
-  const parsed = parseHttpUrl(url);
+  const parsed = parseUrl(url);
   if (!parsed) {
     return undefined;
   }
-  return segmentAfter(pathSegments(parsed), ['video', 'photo']);
+  return segmentAfter(pathSegments(parsed.pathname), ['video', 'photo']);
 };
 
 export const getPinterestPinId = (url: string): string | undefined => {
-  const parsed = parseHttpUrl(url);
+  const parsed = parseUrl(url);
   if (!parsed) {
     return undefined;
   }
-  return segmentAfter(pathSegments(parsed), ['pin']);
+  return segmentAfter(pathSegments(parsed.pathname), ['pin']);
 };
 
 export const getCleanInstagramUrl = (url: string): string | undefined => {
-  const parsed = parseHttpUrl(url);
+  const parsed = parseUrl(url);
   if (!parsed) {
     return undefined;
   }
-  const segs = pathSegments(parsed);
+  const segs = pathSegments(parsed.pathname);
   const kindIndex = segs.findIndex((segment) => ['p', 'reel', 'reels', 'tv'].includes(segment.toLowerCase()));
   const code = kindIndex >= 0 ? segs[kindIndex + 1] : undefined;
   if (!code) {

@@ -16,6 +16,7 @@ import {
   nativeAutoHeightScript,
   parseAutoHeightMessage,
 } from './nativeEmbedHeight';
+import { parseUrl } from '../../utils/parseUrl';
 import type { NativeEmbedViewProps } from './NativeEmbedView.types';
 
 export type { NativeEmbedViewProps } from './NativeEmbedView.types';
@@ -25,12 +26,8 @@ const isHttpUrl = (url: string): boolean => /^https?:\/\//i.test(url);
 const normalizeUrl = (url: string): string => url.replace(/\/$/, '').split('#')[0];
 
 const isEmbedHostPath = (url: string, host: string, path: string): boolean => {
-  try {
-    const parsed = new URL(url);
-    return parsed.hostname.endsWith(host) && parsed.pathname.includes(path);
-  } catch {
-    return false;
-  }
+  const parsed = parseUrl(url);
+  return parsed != null && parsed.hostname.endsWith(host) && parsed.pathname.includes(path);
 };
 
 const isProviderEmbedUrl = (url: string): boolean =>

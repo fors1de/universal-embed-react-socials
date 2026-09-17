@@ -7,11 +7,15 @@ export const INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT = 820;
 export interface InstagramEmbedProps extends CommonEmbedProps {
   captioned?: boolean;
   placeholderProps?: PlaceholderEmbedOptions;
+  /** Instagram embed.js `data-instgrm-version`. Current official embed markup uses `"14"`. */
+  apiVersion?: string;
+}
+
+/** Web only. Ignored on React Native. */
+export interface InstagramEmbedWebProps {
   scriptLoadDisabled?: boolean;
   retryDelay?: number;
   retryDisabled?: boolean;
-  /** Instagram embed.js `data-instgrm-version`. Current official embed markup uses `"14"`. */
-  apiVersion?: string;
   frame?: Frame;
   debug?: boolean;
 }

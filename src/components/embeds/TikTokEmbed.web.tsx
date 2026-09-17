@@ -26,9 +26,10 @@ import {
   buildTikTokPlayerSrc,
   usesTikTokPlayer,
   type TikTokEmbedProps,
+  type TikTokEmbedWebProps,
 } from './TikTokEmbed.types';
 
-export type { TikTokEmbedProps, TikTokPlayerFlag, TikTokPlayerVars } from './TikTokEmbed.types';
+export type { TikTokEmbedProps, TikTokEmbedWebProps, TikTokPlayerFlag, TikTokPlayerVars } from './TikTokEmbed.types';
 
 const defaultPlaceholderHeight = 739;
 const officialEmbedWidth = 325;
@@ -62,7 +63,7 @@ const TikTokPlayerEmbed = ({
   style,
   id,
   testID,
-}: TikTokEmbedProps): ReactElement => {
+}: TikTokEmbedProps & TikTokEmbedWebProps): ReactElement => {
   const { ref: lazyRef, disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy);
   const reportError = useEmbedOnError(onError, url);
   const [ready, setReady] = useState(false);
@@ -187,7 +188,7 @@ const TikTokOEmbed = ({
   style,
   id,
   testID,
-}: TikTokEmbedProps): ReactElement => {
+}: TikTokEmbedProps & TikTokEmbedWebProps): ReactElement => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(officialEmbedWidth, resolvedMaxWidth);
   const { disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy, boxRef);
@@ -336,7 +337,7 @@ const TikTokOEmbed = ({
   );
 };
 
-export const TikTokEmbed = (props: TikTokEmbedProps): ReactElement => {
+export const TikTokEmbed = (props: TikTokEmbedProps & TikTokEmbedWebProps): ReactElement => {
   if (usesTikTokPlayer(props.allowsFullscreenVideo, props.tikTokProps)) {
     return <TikTokPlayerEmbed {...props} />;
   }

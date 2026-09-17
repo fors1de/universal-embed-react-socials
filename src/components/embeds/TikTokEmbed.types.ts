@@ -25,11 +25,6 @@ export interface TikTokPlayerVars {
 
 export interface TikTokEmbedProps extends CommonEmbedProps {
   placeholderProps?: PlaceholderEmbedOptions;
-  scriptLoadDisabled?: boolean;
-  retryDelay?: number;
-  retryDisabled?: boolean;
-  frame?: Frame;
-  debug?: boolean;
   /**
    * Use TikTok's Embed Player (`/player/v1`) so fullscreen stays in-app
    * instead of opening TikTok. Defaults to `false` (oEmbed card).
@@ -37,6 +32,15 @@ export interface TikTokEmbedProps extends CommonEmbedProps {
   allowsFullscreenVideo?: boolean;
   /** Official Embed Player query parameters. Implies the Embed Player. */
   tikTokProps?: TikTokPlayerVars;
+}
+
+/** Web only. Ignored on React Native. */
+export interface TikTokEmbedWebProps {
+  scriptLoadDisabled?: boolean;
+  retryDelay?: number;
+  retryDisabled?: boolean;
+  frame?: Frame;
+  debug?: boolean;
 }
 
 export const TIKTOK_PLAYER_HOST = 'https://www.tiktok.com';
