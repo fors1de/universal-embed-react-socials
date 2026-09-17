@@ -87,6 +87,11 @@ export interface CommonEmbedProps extends EmbedContainerProps {
    */
   openLinksInBrowser?: boolean;
   /**
+   * Accessible name for the embed iframe (web) or WebView (React Native).
+   * Defaults to `{provider} embed {id}` so multiple embeds on one page stay unique.
+   */
+  iframeTitle?: string;
+  /**
    * Web only. Facebook and Pinterest load provider HTML in a `blob:` iframe that
    * inherits this page's origin (cookies, `localStorage`, `parent.document`).
    * `true` applies a restrictive sandbox without `allow-same-origin`. Facebook

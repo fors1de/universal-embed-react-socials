@@ -22,6 +22,14 @@ declare module 'react-native' {
     openURL: (url: string) => Promise<void>;
   };
 
+  export const AccessibilityInfo: {
+    isReduceMotionEnabled: () => Promise<boolean>;
+    addEventListener: (
+      event: 'reduceMotionChanged',
+      handler: (reduceMotionEnabled: boolean) => void,
+    ) => { remove: () => void };
+  };
+
   export const Dimensions: {
     get: (dim: 'window' | 'screen') => { width: number; height: number };
     addEventListener: (

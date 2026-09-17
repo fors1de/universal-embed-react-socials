@@ -101,6 +101,7 @@ export const NativeEmbedView = ({
   webViewProps,
   url = '',
   onError,
+  iframeTitle,
   id,
   testID,
 }: NativeEmbedViewProps) => {
@@ -258,6 +259,7 @@ export const NativeEmbedView = ({
         },
         style as StyleProp<ViewStyle>,
       ]}
+      accessibilityState={{ busy: showPlaceholder }}
     >
       <View
         style={
@@ -289,6 +291,10 @@ export const NativeEmbedView = ({
             scrollEnabled={!autoHeightEnabled && !fitEnabled && !useAspectRatio}
             bounces={false}
             overScrollMode="never"
+            accessibilityLabel={iframeTitle}
+            accessible={!showPlaceholder && !!iframeTitle}
+            accessibilityElementsHidden={showPlaceholder}
+            importantForAccessibility={showPlaceholder ? 'no-hide-descendants' : 'yes'}
             {...restWebViewProps}
             source={source}
             injectedJavaScriptBeforeContentLoaded={
@@ -371,7 +377,12 @@ export const NativeEmbedView = ({
         ) : null}
       </View>
       {showPlaceholder ? (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>{placeholder}</View>
+        <View
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          importantForAccessibility="yes"
+        >
+          {placeholder}
+        </View>
       ) : null}
     </View>
   );

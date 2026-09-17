@@ -4,6 +4,7 @@ import { useResponsiveEmbedBox } from '../../hooks/useEmbedHeight';
 import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { embedScaleStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { LINKEDIN_DESIGN_HEIGHT, LINKEDIN_DESIGN_WIDTH } from './embedHtml';
@@ -33,6 +34,7 @@ export const LinkedInEmbed = ({
   embedDisabled: embedDisabledProp = false,
   lazy = false,
   onError,
+  iframeTitle,
   className,
   style,
   id,
@@ -116,7 +118,7 @@ export const LinkedInEmbed = ({
               setFailed(true);
               reportError('load-failed');
             }}
-            title="LinkedIn embed"
+            title={embedIframeTitle('LinkedIn', { title: iframeTitle, url: postUrl ?? url })}
             style={embedScaleStyle(scale, LINKEDIN_DESIGN_WIDTH)}
           />
           )}

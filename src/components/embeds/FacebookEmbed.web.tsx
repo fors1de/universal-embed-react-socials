@@ -6,6 +6,7 @@ import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { DEFAULT_FACEBOOK_API_VERSION, DEFAULT_FACEBOOK_LOCALE } from '../../utils/apiVersion';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { resolveIframeSandbox, sandboxAllowsSameOrigin } from '../../utils/iframeSandbox';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { embedScaleStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { facebookEmbedHtml } from './embedHtml';
@@ -60,6 +61,7 @@ export const FacebookEmbed = ({
   locale = DEFAULT_FACEBOOK_LOCALE,
   iframeSandbox,
   onError,
+  iframeTitle,
   className,
   style,
   id,
@@ -173,7 +175,7 @@ export const FacebookEmbed = ({
     width: pluginWidth,
     allow: 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share',
     allowFullScreen: true,
-    title: 'Facebook embed',
+    title: embedIframeTitle('Facebook', { title: iframeTitle, url }),
     style: embedScaleStyle(scale, pluginWidth),
   };
 

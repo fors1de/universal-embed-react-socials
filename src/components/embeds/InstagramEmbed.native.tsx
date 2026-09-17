@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { DEFAULT_INSTAGRAM_API_VERSION, normalizeInstagramApiVersion } from '../../utils/apiVersion';
 import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { getCleanInstagramUrl } from '../../utils/urls';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { instagramEmbedHtml } from './embedHtml';
 import {
   INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT,
@@ -22,6 +23,7 @@ export const InstagramEmbed = ({
   placeholderText = 'View post on Instagram',
   onError,
   embedDisabled,
+  iframeTitle,
   ...props
 }: InstagramEmbedProps) => {
   const resolvedVersion = normalizeInstagramApiVersion(apiVersion);
@@ -44,6 +46,7 @@ export const InstagramEmbed = ({
       embedDisabled={embedDisabled || !cleanUrl}
       placeholderText={placeholderText}
       html={html}
+      iframeTitle={embedIframeTitle('Instagram', { title: iframeTitle, url: cleanUrl ?? props.url })}
       baseUrl="https://www.instagram.com"
       fallbackHeight={captioned ? INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT : INSTAGRAM_PLACEHOLDER_HEIGHT}
       onError={onError}

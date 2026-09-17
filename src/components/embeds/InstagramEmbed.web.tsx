@@ -8,11 +8,12 @@ import { DEFAULT_INSTAGRAM_API_VERSION, normalizeInstagramApiVersion } from '../
 import { classNames } from '../../utils/classNames';
 import { EMBED_FAILED_STAGE, EMBED_MAX_RETRIES } from '../../utils/embedLoad';
 import { ensureScript } from '../../utils/ensureScript';
-import { embedScaleStyle, placeholderOverlayStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
+import { embedScaleStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
 import { Subs } from '../../utils/subs';
 import { getCleanInstagramUrl } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { EmbedShell } from './EmbedShell';
+import { PlaceholderOverlay } from './MediaFrame';
 import {
   INSTAGRAM_CAPTIONED_PLACEHOLDER_HEIGHT,
   INSTAGRAM_PLACEHOLDER_HEIGHT,
@@ -245,6 +246,7 @@ export const InstagramEmbed = ({
       height={frameHeight}
       borderRadius={borderRadius}
       style={{ position: 'relative', ...style }}
+      busy={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}
     >
       <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
       {embedDisabled || !cleanUrlWithEndingSlash ? null : (
@@ -264,9 +266,9 @@ export const InstagramEmbed = ({
       </Box>
       )}
       </div>
-      {showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null ? (
-        <Box style={placeholderOverlayStyle}>{resolvedPlaceholder}</Box>
-      ) : null}
+      <PlaceholderOverlay show={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}>
+        {resolvedPlaceholder}
+      </PlaceholderOverlay>
     </EmbedShell>
     </div>
   );

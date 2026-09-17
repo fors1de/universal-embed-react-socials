@@ -9,17 +9,17 @@ import {
   collapsedEmbedStyle,
   embedMaxWidthStyle,
   embedScaleStyle,
-  placeholderOverlayStyle,
   resolveEmbedFrame,
   resolveEmbedMaxWidth,
 } from '../../utils/style';
 import { EMBED_FAILED_STAGE, EMBED_GIVE_UP_MS, EMBED_MAX_RETRIES } from '../../utils/embedLoad';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { ensureScript } from '../../utils/ensureScript';
 import { Subs } from '../../utils/subs';
 import { getTikTokVideoId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { EmbedShell } from './EmbedShell';
-import { MediaFrame } from './MediaFrame';
+import { MediaFrame, PlaceholderOverlay } from './MediaFrame';
 import {
   TIKTOK_PLAYER_ASPECT_RATIO,
   TIKTOK_PLAYER_FALLBACK_HEIGHT,
@@ -59,6 +59,7 @@ const TikTokPlayerEmbed = ({
   lazy = false,
   tikTokProps,
   onError,
+  iframeTitle,
   className,
   style,
   id,
@@ -147,7 +148,7 @@ const TikTokPlayerEmbed = ({
               height="100%"
               allow="fullscreen; autoplay; encrypted-media"
               allowFullScreen
-              title="TikTok embed"
+              title={embedIframeTitle('TikTok', { title: iframeTitle, id: videoId, url })}
               onLoad={() => setReady(true)}
               onError={() => {
                 setFailed(true);
@@ -317,7 +318,7 @@ const TikTokOEmbed = ({
 
   return (
     <div ref={boxRef} style={boxStyle}>
-    <EmbedShell id={id} testID={testID} className={className} extraClassName="rsme-tiktok-embed" width="100%" height={frameHeight} borderRadius={borderRadius} style={{ position: 'relative', ...style }}>
+    <EmbedShell id={id} testID={testID} className={className} extraClassName="rsme-tiktok-embed" width="100%" height={frameHeight} borderRadius={borderRadius} style={{ position: 'relative', ...style }} busy={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}>
       <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
       {embedDisabled || !embedId ? null : (
       <Box key={embedContainerKey} className="tiktok-embed-container">
@@ -329,9 +330,9 @@ const TikTokOEmbed = ({
       </Box>
       )}
       </div>
-      {showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null ? (
-        <Box style={placeholderOverlayStyle}>{resolvedPlaceholder}</Box>
-      ) : null}
+      <PlaceholderOverlay show={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}>
+        {resolvedPlaceholder}
+      </PlaceholderOverlay>
     </EmbedShell>
     </div>
   );

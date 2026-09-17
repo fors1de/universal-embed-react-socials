@@ -107,3 +107,7 @@ export const isJavaScriptUrl = (url: string): boolean =>
   /^[\u0000-\u001F ]*j[\r\n\t]*a[\r\n\t]*v[\r\n\t]*a[\r\n\t]*s[\r\n\t]*c[\r\n\t]*r[\r\n\t]*i[\r\n\t]*p[\r\n\t]*t[\r\n\t]*\:/i.test(
     url,
   );
+
+/** True when the string is a real navigation target (not empty or `#`). */
+export const isOpenableHref = (url?: string): url is string =>
+  typeof url === 'string' && url !== '' && url !== '#';

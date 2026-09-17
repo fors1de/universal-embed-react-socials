@@ -50,14 +50,15 @@ export const EmbedLink = ({
   children,
   target = "_blank",
   rel = "noopener noreferrer",
+  "aria-label": ariaLabel,
 }: LinkProps) => (
-  <a href={href} className={className} style={style} target={target} rel={rel}>
+  <a href={href} className={className} style={style} target={target} rel={rel} aria-label={ariaLabel}>
     {children}
   </a>
 );
 
 export const EmbedImage = ({ src, className, style, alt }: ImageProps) => (
-  <img src={src} className={className} style={style} alt={alt} />
+  <img src={src} className={className} style={style} alt={alt ?? ""} />
 );
 
 export const IFrame = ({

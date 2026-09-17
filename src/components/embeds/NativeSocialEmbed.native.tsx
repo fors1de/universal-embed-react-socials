@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { resolveEmbedMaxWidth } from '../../utils/style';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { resolveNativeEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { NativeEmbedView } from './NativeEmbedView';
 import type { NativeSocialEmbedProps } from './NativeSocialEmbed.types';
@@ -28,6 +29,7 @@ export const NativeSocialEmbed = ({
   fallbackHeight,
   placeholderUrl,
   iframeSandbox: _iframeSandbox,
+  iframeTitle,
   onError,
   ...viewProps
 }: NativeSocialEmbedProps) => {
@@ -87,6 +89,7 @@ export const NativeSocialEmbed = ({
       lazy={lazy}
       openLinksInBrowser={openLinksInBrowser}
       webViewProps={webViewProps}
+      iframeTitle={iframeTitle ?? embedIframeTitle('Embed', { url })}
       onError={(error) => {
         setFailed(true);
         onError?.(error);

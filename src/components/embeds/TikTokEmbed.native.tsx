@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Linking } from 'react-native';
 import { useEmbedOnError } from '../../hooks/useEmbedOnError';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { getTikTokVideoId } from '../../utils/urls';
 import { resolveTikTokBrowserUrl } from '../../utils/tiktokUrls';
 import { withTikTokProfileLinks } from '../../utils/tiktokProfileLinks';
@@ -32,10 +33,12 @@ export const TikTokEmbed = ({
   height,
   onError,
   embedDisabled,
+  iframeTitle,
   ...props
 }: TikTokEmbedProps) => {
   const videoId = getTikTokVideoId(url);
   const reportError = useEmbedOnError(onError, url);
+  const resolvedTitle = embedIframeTitle('TikTok', { title: iframeTitle, id: videoId, url });
   useEffect(() => {
     if (!videoId && !embedDisabled) {
       reportError('invalid-url');
@@ -44,8 +47,10 @@ export const TikTokEmbed = ({
   const usePlayer = usesTikTokPlayer(allowsFullscreenVideo, tikTokProps);
   const html = useMemo(
     () =>
-      usePlayer && videoId ? buildTikTokPlayerHtml(buildTikTokPlayerSrc(videoId, tikTokProps)) : undefined,
-    [tikTokProps, usePlayer, videoId],
+      usePlayer && videoId
+        ? buildTikTokPlayerHtml(buildTikTokPlayerSrc(videoId, tikTokProps), resolvedTitle)
+        : undefined,
+    [resolvedTitle, tikTokProps, usePlayer, videoId],
   );
   return (
     <NativeSocialEmbed
@@ -55,6 +60,7 @@ export const TikTokEmbed = ({
       embedDisabled={embedDisabled || !videoId}
       placeholderText={placeholderText}
       onError={onError}
+      iframeTitle={resolvedTitle}
       {...(usePlayer
         ? {
             html,

@@ -2,9 +2,11 @@ import type { CSSProperties, ReactNode } from 'react';
 import type { EmbedStyle } from '../../types';
 
 export interface PlaceholderEmbedProps {
-  url: string;
+  url?: string;
   placeholderText?: string;
   imageUrl?: string;
+  /** Accessible text for `imageUrl`. Defaults to empty (decorative); the control name is `placeholderText`. */
+  imageAlt?: string;
   spinner?: ReactNode;
   spinnerDisabled?: boolean;
   allowJavaScriptUrls?: boolean;

@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { getXPostId } from '../../utils/urls';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { xEmbedHtml } from './embedHtml';
 import { NativeSocialEmbed } from './NativeSocialEmbed';
@@ -15,6 +16,7 @@ export const XEmbed = ({
   webViewProps,
   onError,
   embedDisabled,
+  iframeTitle,
   ...props
 }: XEmbedProps) => {
   const postId = twitterTweetEmbedProps?.tweetId || getXPostId(props.url);
@@ -31,6 +33,7 @@ export const XEmbed = ({
       embedDisabled={embedDisabled || !postId}
       placeholderText={placeholderText}
       html={html}
+      iframeTitle={embedIframeTitle('X', { title: iframeTitle, id: postId, url: props.url })}
       baseUrl="https://twitter.com"
       fallbackHeight={defaultPlaceholderHeight}
       onError={onError}

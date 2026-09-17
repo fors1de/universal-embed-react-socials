@@ -60,9 +60,9 @@ export const buildTikTokPlayerSrc = (
   return `${TIKTOK_PLAYER_HOST}/player/v1/${videoId}${query ? `?${query}` : ''}`;
 };
 
-export const buildTikTokPlayerHtml = (src: string): string =>
+export const buildTikTokPlayerHtml = (src: string, title?: string): string =>
   playerIframeHtml({
     src,
     allow: 'fullscreen; autoplay; encrypted-media',
-    extraIframeAttrs: 'title="TikTok embed"',
+    title: title ?? 'TikTok embed',
   });

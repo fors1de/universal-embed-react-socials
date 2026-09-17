@@ -4,6 +4,7 @@ import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { aspectRatioHeight, collapsedEmbedStyle, embedMaxWidthStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { getYouTubeStart, getYouTubeVideoId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { EmbedShell } from './EmbedShell';
@@ -33,6 +34,7 @@ export const YouTubeEmbed = ({
   lazy = false,
   youTubeProps,
   onError,
+  iframeTitle,
   className,
   style,
   id,
@@ -129,7 +131,7 @@ export const YouTubeEmbed = ({
               height="100%"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              title="YouTube embed"
+              title={embedIframeTitle('YouTube', { title: iframeTitle, id: videoId, url })}
               onLoad={() => {
                 setReady(true);
               }}

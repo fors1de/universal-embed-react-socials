@@ -6,11 +6,12 @@ import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { ensureScript } from '../../utils/ensureScript';
 import { useFrame } from '../../hooks/useFrame';
-import { placeholderOverlayStyle, resolveEmbedFrame, resolveEmbedMaxWidth, isPercentage } from '../../utils/style';
+import { resolveEmbedFrame, resolveEmbedMaxWidth, isPercentage } from '../../utils/style';
 import { Subs } from '../../utils/subs';
 import { getXPostId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { EmbedShell } from './EmbedShell';
+import { PlaceholderOverlay } from './MediaFrame';
 import type { XEmbedProps } from './XEmbed.types';
 
 export type { TwitterTweetEmbedProps, XEmbedProps } from './XEmbed.types';
@@ -159,6 +160,7 @@ export const XEmbed = ({
         height={frameHeight}
         borderRadius={borderRadius}
         style={{ position: 'relative', ...style }}
+        busy={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}
       >
         <div ref={containerRef} style={{ width: '100%' }}>
           {embedDisabled || !postId ? null : (
@@ -169,9 +171,9 @@ export const XEmbed = ({
             </Box>
           )}
         </div>
-        {showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null ? (
-          <Box style={placeholderOverlayStyle}>{resolvedPlaceholder}</Box>
-        ) : null}
+        <PlaceholderOverlay show={showPlaceholder && !placeholderDisabled && resolvedPlaceholder != null}>
+          {resolvedPlaceholder}
+        </PlaceholderOverlay>
       </EmbedShell>
     </div>
   );

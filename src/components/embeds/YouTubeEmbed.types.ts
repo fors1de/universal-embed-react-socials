@@ -50,11 +50,12 @@ export const buildYouTubeSrc = (
 };
 
 /** WKWebView strips Referer on a bare embed URL, which YouTube rejects as Error 153. */
-export const buildYouTubeEmbedHtml = (src: string): string =>
+export const buildYouTubeEmbedHtml = (src: string, title?: string): string =>
   playerIframeHtml({
     src,
     allow:
       'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
     extraHead: '<meta name="referrer" content="strict-origin-when-cross-origin" />',
     extraIframeAttrs: 'referrerpolicy="strict-origin-when-cross-origin"',
+    title,
   });

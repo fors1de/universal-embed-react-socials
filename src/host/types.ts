@@ -24,6 +24,7 @@ export interface LinkProps {
   children?: ReactNode;
   target?: string;
   rel?: string;
+  'aria-label'?: string;
 }
 
 export interface ImageProps {

@@ -161,6 +161,8 @@ Every embed accepts:
 - `placeholder` — custom loading UI. Replaces the default placeholder. Pass `null` or `() => null` to render nothing and reserve no height until the embed is ready.
 - `placeholderWidth` / `placeholderHeight` / `placeholderStyle` — optional overrides. By default the placeholder matches the embed size, or the provider’s default size before the embed has measured.
 - `placeholderImageUrl` / `placeholderSpinner` / `placeholderSpinnerDisabled` / `placeholderProps`
+- `placeholderProps.imageAlt` — alt text for `placeholderImageUrl`. Defaults to empty (decorative); the placeholder control is named by `placeholderText`.
+- `iframeTitle` — accessible name for the embed iframe (web) or WebView (React Native). Defaults to `{provider} embed {id}` so two YouTube embeds on one page are not both named “YouTube embed”.
 - `placeholderDisabled` — hide the placeholder.
 - `embedDisabled` — keep the placeholder and do not load the live embed (iframe, WebView, or provider scripts) until this is `false`.
 - `lazy` — wait until the embed is near the viewport before loading provider scripts or a WebView. Default `false` (load immediately, same as before).

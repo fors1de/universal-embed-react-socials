@@ -91,7 +91,7 @@ export const resolveEmbedPlaceholder = (options: ResolveEmbedPlaceholderOptions)
 
   return (
     <PlaceholderEmbed
-      url={url ?? '#'}
+      url={url}
       imageUrl={placeholderImageUrl}
       placeholderText={placeholderText}
       spinner={placeholderSpinner}

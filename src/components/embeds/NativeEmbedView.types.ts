@@ -28,6 +28,7 @@ export interface NativeEmbedViewProps {
   webViewProps?: EmbedWebViewProps;
   url?: string;
   onError?: (error: EmbedError) => void;
+  iframeTitle?: string;
   id?: string;
   testID?: string;
 }

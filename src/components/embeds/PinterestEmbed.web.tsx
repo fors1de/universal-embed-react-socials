@@ -4,6 +4,7 @@ import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { useLazyEmbed } from '../../hooks/useLazyEmbed';
 import { EMBED_GIVE_UP_MS } from '../../utils/embedLoad';
 import { resolveIframeSandbox } from '../../utils/iframeSandbox';
+import { embedIframeTitle } from '../../utils/iframeTitle';
 import { embedMaxWidthStyle, isPercentage, resolveEmbedMaxWidth } from '../../utils/style';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
 import { pinterestEmbedHtml } from './embedHtml';
@@ -35,6 +36,7 @@ export const PinterestEmbed = ({
   lazy = false,
   iframeSandbox,
   onError,
+  iframeTitle,
   className,
   style,
   id,
@@ -147,7 +149,7 @@ export const PinterestEmbed = ({
               src={frameSrc}
               width="100%"
               height={frameHeight || officialEmbedHeight}
-              title="Pinterest embed"
+              title={embedIframeTitle('Pinterest', { title: iframeTitle, url: postHref })}
               sandbox={sandbox}
               onError={() => {
                 setFailed(true);
