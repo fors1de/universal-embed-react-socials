@@ -10,6 +10,7 @@ import { resolveEmbedFrame, resolveEmbedMaxWidth, isPercentage } from '../../uti
 import { Subs } from '../../utils/subs';
 import { getXPostId } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
+import { resolveTwitterLang } from '../../utils/twitterLang';
 import { EmbedShell } from './EmbedShell';
 import { MediaFrame } from './MediaFrame';
 import type { XEmbedProps } from './XEmbed.types';
@@ -37,6 +38,7 @@ export const XEmbed = ({
   embedDisabled: embedDisabledProp = false,
   lazy = false,
   twitterTweetEmbedProps,
+  locale,
   onError,
   className,
   style,
@@ -44,6 +46,7 @@ export const XEmbed = ({
   testID,
 }: XEmbedProps) => {
   const postId = twitterTweetEmbedProps?.tweetId || getXPostId(url);
+  const widgetLang = resolveTwitterLang(locale ?? twitterTweetEmbedProps?.locale);
   const onLoad = twitterTweetEmbedProps?.onLoad;
   const onLoadRef = useRef(onLoad);
   onLoadRef.current = onLoad;
@@ -117,7 +120,7 @@ export const XEmbed = ({
       cleanup();
     }, EMBED_GIVE_UP_MS);
     return cleanup;
-  }, [embedId, frm.document, frm.window, postId, embedDisabled]);
+  }, [embedId, frm.document, frm.window, postId, embedDisabled, widgetLang]);
 
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url,
@@ -164,8 +167,8 @@ export const XEmbed = ({
         <MediaFrame showPlaceholder={showPlaceholder} placeholder={resolvedPlaceholder}>
         <div ref={containerRef} style={{ width: '100%' }}>
           {embedDisabled || !postId ? null : (
-            <Box id={embedId} key={postId}>
-              <blockquote className="twitter-tweet" data-width={officialEmbedWidth}>
+            <Box id={embedId} key={`${postId}-${widgetLang}`}>
+              <blockquote className="twitter-tweet" data-width={officialEmbedWidth} data-lang={widgetLang}>
                 <a href={`https://twitter.com/i/status/${postId}`}>{placeholderText}</a>
               </blockquote>
             </Box>

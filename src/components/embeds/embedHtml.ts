@@ -140,9 +140,9 @@ export const pinterestEmbedHtml = ({
   `);
 };
 
-export const xEmbedHtml = ({ postId }: { postId: string }): string =>
+export const xEmbedHtml = ({ postId, lang }: { postId: string; lang: string }): string =>
   documentShell(`
-    <blockquote class="twitter-tweet">
+    <blockquote class="twitter-tweet" data-lang="${escapeHtmlAttribute(lang)}">
       <a href="https://twitter.com/i/status/${escapeHtmlAttribute(postId)}"></a>
     </blockquote>
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>

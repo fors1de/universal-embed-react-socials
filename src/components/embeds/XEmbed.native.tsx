@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { getXPostId } from '../../utils/urls';
 import { embedIframeTitle } from '../../utils/iframeTitle';
+import { resolveTwitterLang } from '../../utils/twitterLang';
 import { useEmbedOnError } from '../../hooks/useEmbedOnError';
 import { xEmbedHtml } from './embedHtml';
 import { NativeSocialEmbed } from './NativeSocialEmbed';
@@ -17,16 +18,21 @@ export const XEmbed = ({
   onError,
   embedDisabled,
   iframeTitle,
+  locale,
   ...props
 }: XEmbedProps) => {
   const postId = twitterTweetEmbedProps?.tweetId || getXPostId(props.url);
+  const widgetLang = resolveTwitterLang(locale ?? twitterTweetEmbedProps?.locale);
   const reportError = useEmbedOnError(onError, props.url);
   useEffect(() => {
     if (!postId && !embedDisabled) {
       reportError('invalid-url');
     }
   }, [embedDisabled, postId, reportError]);
-  const html = useMemo(() => (postId ? xEmbedHtml({ postId }) : undefined), [postId]);
+  const html = useMemo(
+    () => (postId ? xEmbedHtml({ postId, lang: widgetLang }) : undefined),
+    [postId, widgetLang],
+  );
   return (
     <NativeSocialEmbed
       {...props}
