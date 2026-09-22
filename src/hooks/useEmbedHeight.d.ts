@@ -9,6 +9,7 @@ export declare const useResponsiveEmbedScale: (
 ) => {
   boxRef: MutableRefObject<unknown>;
   boxWidth: number;
+  widthMeasured: boolean;
   scale: number;
 };
 
@@ -19,6 +20,7 @@ export declare const useResponsiveEmbedBox: (
 ) => {
   boxRef: MutableRefObject<unknown>;
   boxWidth: number;
+  widthMeasured: boolean;
   scale: number;
   boxStyle: { width?: string | number; maxWidth?: string | number };
 };

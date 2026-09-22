@@ -15,6 +15,7 @@ export const useResponsiveEmbedScale = (
   const [boxWidth, setBoxWidth] = useState(
     initialWidth && initialWidth > 0 ? initialWidth : designWidth,
   );
+  const [widthMeasured, setWidthMeasured] = useState(false);
 
   useEffect(() => {
     const node = boxRef.current;
@@ -25,6 +26,7 @@ export const useResponsiveEmbedScale = (
       const next = Math.round(node.getBoundingClientRect().width);
       if (next > 0) {
         setBoxWidth((prev) => (Math.abs(prev - next) < 2 ? prev : next));
+        setWidthMeasured(true);
       }
     };
     update();
@@ -37,6 +39,7 @@ export const useResponsiveEmbedScale = (
   return {
     boxRef,
     boxWidth,
+    widthMeasured,
     scale: allowUpscale ? rawScale : Math.min(1, rawScale),
   };
 };
@@ -46,7 +49,7 @@ export const useResponsiveEmbedBox = (
   maxWidth?: string | number,
   options?: { allowUpscale?: boolean; fallbackMaxWidth?: number },
 ) => {
-  const { boxRef, boxWidth, scale } = useResponsiveEmbedScale(designWidth, {
+  const { boxRef, boxWidth, scale, widthMeasured } = useResponsiveEmbedScale(designWidth, {
     allowUpscale: options?.allowUpscale ?? true,
     initialWidth: typeof maxWidth === 'number' && maxWidth > 0 ? maxWidth : undefined,
   });
@@ -54,6 +57,7 @@ export const useResponsiveEmbedBox = (
     boxRef,
     boxWidth,
     scale,
+    widthMeasured,
     // Omit maxWidth → fill the parent at 100%.
     boxStyle: embedMaxWidthStyle(
       maxWidth,

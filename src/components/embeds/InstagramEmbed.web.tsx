@@ -8,7 +8,7 @@ import { DEFAULT_INSTAGRAM_API_VERSION, normalizeInstagramApiVersion } from '../
 import { classNames } from '../../utils/classNames';
 import { EMBED_FAILED_STAGE, EMBED_MAX_RETRIES } from '../../utils/embedLoad';
 import { ensureScript } from '../../utils/ensureScript';
-import { embedScaleStyle, resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
+import { resolveEmbedFrame, resolveEmbedMaxWidth } from '../../utils/style';
 import { Subs } from '../../utils/subs';
 import { getCleanInstagramUrl } from '../../utils/urls';
 import { resolveEmbedPlaceholder } from '../placeholder/resolveEmbedPlaceholder';
@@ -28,7 +28,8 @@ export {
   type InstagramEmbedWebProps,
 };
 
-const officialEmbedWidth = 550;
+/** Instagram lays the iframe out at `data-width`. Cap here so a wide page does not stretch type. */
+const INSTAGRAM_MAX_WIDTH = 540;
 const borderRadius = 3;
 const INSTAGRAM_SCRIPT_ID = 'instagram-embed-script';
 
@@ -74,7 +75,12 @@ export const InstagramEmbed = ({
   testID,
 }: InstagramEmbedProps & InstagramEmbedWebProps): ReactElement => {
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
-  const { boxRef, scale, boxStyle } = useResponsiveEmbedBox(officialEmbedWidth, resolvedMaxWidth);
+  const { boxRef, boxWidth, widthMeasured, boxStyle } = useResponsiveEmbedBox(
+    INSTAGRAM_MAX_WIDTH,
+    resolvedMaxWidth,
+  );
+  const embedWidth = widthMeasured ? Math.min(INSTAGRAM_MAX_WIDTH, Math.max(1, boxWidth)) : undefined;
+  const widthBucket = embedWidth == null ? undefined : Math.round(embedWidth / 24) * 24;
   const { disabled: embedDisabled } = useLazyEmbed(embedDisabledProp, lazy, boxRef);
   const resolvedVersion = normalizeInstagramApiVersion(apiVersion);
   const cleanUrlWithEndingSlash = getCleanInstagramUrl(url);
@@ -89,7 +95,7 @@ export const InstagramEmbed = ({
   useEffect(() => {
     setStage(CHECK_SCRIPT_STAGE);
     setRetryCount(0);
-  }, [url, captioned, resolvedVersion, embedDisabled]);
+  }, [url, captioned, resolvedVersion, embedDisabled, widthBucket]);
 
   useEffect(() => {
     if (embedDisabled) {
@@ -149,7 +155,7 @@ export const InstagramEmbed = ({
   }, [stage, frm.window, embedDisabled, retryDelay]);
 
   useEffect(() => {
-    if (embedDisabled || stage !== PROCESS_EMBED_STAGE) {
+    if (embedDisabled || stage !== PROCESS_EMBED_STAGE || embedWidth == null) {
       return;
     }
     const process = instagramProcess(frm.window);
@@ -161,7 +167,7 @@ export const InstagramEmbed = ({
       setStage(EMBED_FAILED_STAGE);
       reportError('script-missing');
     }
-  }, [stage, frm.window, url, embedDisabled]);
+  }, [stage, frm.window, url, embedDisabled, embedWidth]);
 
   useEffect(() => {
     if (embedDisabled) {
@@ -221,19 +227,18 @@ export const InstagramEmbed = ({
     },
     embedWidth: '100%',
     embedHeight: '100%',
-    providerWidth: officialEmbedWidth,
+    providerWidth: embedWidth ?? INSTAGRAM_MAX_WIDTH,
     providerHeight: fallbackHeight,
   });
   const { frameHeight, showPlaceholder } = resolveEmbedFrame({
     ready: embedReady,
     measuredHeight: observedHeight,
     fallbackHeight: resolvedPlaceholder != null ? fallbackHeight : 0,
-    scale,
     height,
   });
 
   return (
-    <div ref={boxRef} style={boxStyle}>
+    <div ref={boxRef} style={{ ...boxStyle, maxWidth: INSTAGRAM_MAX_WIDTH }}>
     <EmbedShell
       id={id}
       testID={testID}
@@ -245,16 +250,16 @@ export const InstagramEmbed = ({
       style={style}
     >
       <MediaFrame showPlaceholder={showPlaceholder} placeholder={resolvedPlaceholder}>
-      <div ref={containerRef} style={embedScaleStyle(scale, officialEmbedWidth)}>
-      {embedDisabled || !cleanUrlWithEndingSlash ? null : (
-      <Box key={embedContainerKey}>
+      <div ref={containerRef} style={{ width: '100%' }}>
+      {embedDisabled || !cleanUrlWithEndingSlash || embedWidth == null ? null : (
+      <Box key={`${embedContainerKey}-${widthBucket}`}>
       <blockquote
         className="instagram-media"
         data-instgrm-permalink={`${cleanUrlWithEndingSlash}?utm_source=ig_embed&utm_campaign=loading`}
         data-instgrm-version={resolvedVersion}
         data-instgrm-captioned={captioned ? captioned : undefined}
-        data-width={officialEmbedWidth}
-        style={{ width: 'calc(100% - 2px)' }}
+        data-width={embedWidth}
+        style={{ width: '100%' }}
       >
         <div id={embedId} className="instagram-media-pre-embed rsme-d-none">
           &nbsp;

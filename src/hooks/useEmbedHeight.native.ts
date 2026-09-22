@@ -6,6 +6,7 @@ export const useResponsiveEmbedScale = (
 ) => ({
   boxRef: { current: null },
   boxWidth: designWidth,
+  widthMeasured: true,
   scale: 1,
 });
 
@@ -16,6 +17,7 @@ export const useResponsiveEmbedBox = (
 ) => ({
   boxRef: { current: null },
   boxWidth: designWidth,
+  widthMeasured: true,
   scale: 1,
   boxStyle: { width: maxWidth ?? designWidth, maxWidth: '100%' },
 });
