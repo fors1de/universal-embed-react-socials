@@ -40,6 +40,15 @@ declare module 'react-native' {
       }) => void,
     ) => { remove: () => void };
   };
+
+  export const Platform: { OS: string };
+
+  export const NativeModules: {
+    I18nManager?: { localeIdentifier?: string };
+    SettingsManager?: {
+      settings?: { AppleLocale?: string; AppleLanguages?: string[] };
+    };
+  };
 }
 
 declare module 'react-native-webview' {

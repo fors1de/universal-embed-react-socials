@@ -110,7 +110,7 @@ import { XEmbed } from "@fors1de/universal-embed-react-socials";
 
 X's official widget is 550px wide. A numeric `maxWidth` is capped at 550; a percentage or CSS length (`"50%"`, `"400px"`) is used as given.
 
-Widget chrome (Like, Reply, Copy link) follows the browser / system language. Pass `locale` to override (`en`, `de`, `ja`, `zh-cn`, or `en_US`).
+Widget chrome (Like, Reply, Copy link) follows the browser language on web and the device language on React Native. Pass `locale` to override (`en`, `de`, `ja`, `zh-cn`, or `en_US`).
 
 `TwitterEmbed` is still exported as a deprecated alias of `XEmbed`.
 
@@ -180,7 +180,7 @@ Provider-specific:
 - `postUrl` — LinkedIn and Pinterest. Canonical post URL used as the placeholder target when it differs from the embed `url`.
 - `captioned` — Instagram. Request the captioned embed layout.
 - `apiVersion` — Facebook Graph / JS SDK version, or Instagram `data-instgrm-version`.
-- `locale` — Facebook SDK locale (for example `en_US`). X (Twitter) widget chrome locale; defaults to the browser / system language (`en`, `de`, `ja`, `zh-cn`, or `en_US`).
+- `locale` — Facebook SDK locale (for example `en_US`). X (Twitter) widget chrome locale; defaults to the browser language on web and the device language on React Native (`en`, `de`, `ja`, `zh-cn`, or `en_US`).
 - `allowsFullscreenVideo` — TikTok. Use the Embed Player so fullscreen stays in-app. Also accepted on native WebViews.
 
 `parseEmbedHeight` works on web and native. `useAutoEmbedHeight` is web-only; on React Native it is a no-op because auto-height is handled inside the embed WebView.
