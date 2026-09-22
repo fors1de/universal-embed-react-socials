@@ -1,5 +1,7 @@
 # @fors1de/universal-embed-react-socials
 
+[npm](https://www.npmjs.com/package/@fors1de/universal-embed-react-socials)
+
 Embed posts from Facebook, Instagram, LinkedIn, Pinterest, TikTok, X (Twitter), and YouTube in **React** and **React Native**. Configurable platform API versions available.
 
 On web, embeds use the official platform scripts and iframes. On React Native, paired `.native` files render a `WebView` (`react-native-webview`).
