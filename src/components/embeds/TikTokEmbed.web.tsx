@@ -252,7 +252,7 @@ const TikTokOEmbed = ({
     const subs = new Subs();
     if (stage === CONFIRM_EMBED_SUCCESS_STAGE) {
       subs.setInterval(() => {
-        if (frm.document?.querySelector('.tiktok-embed-container iframe')) {
+        if (containerRef.current?.querySelector('iframe')) {
           setStage(EMBED_SUCCESS_STAGE);
         }
       }, 50);

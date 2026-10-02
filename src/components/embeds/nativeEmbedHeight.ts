@@ -1,4 +1,4 @@
-import { clampEmbedHeight } from '../../utils/embedHeight';
+import { clampEmbedHeight, STUB_HEIGHT_SKIP_LIMIT } from '../../utils/embedHeight';
 
 export const AUTO_HEIGHT_TOPIC = 'rsme-ah';
 
@@ -98,7 +98,10 @@ export const nativeAutoHeightScript = `
           }
         }
         height = Math.ceil(height);
-        if (height && height !== lastHeight) {
+        // Repeat persistent placeholder-sized heights so native can confirm real content.
+        var needsStubConfirmation = (height === 1500 || height === 2000) &&
+          heightTheSameTimes <= ${STUB_HEIGHT_SKIP_LIMIT};
+        if (height && (height !== lastHeight || needsStubConfirmation)) {
           window.ReactNativeWebView.postMessage(JSON.stringify({ topic: topic, height: height }));
         }
         clearTimeout(forceRefreshTimeout);

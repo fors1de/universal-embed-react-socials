@@ -41,7 +41,9 @@ const isProviderEmbedUrl = (url: string): boolean => {
   return (
     parsed != null &&
     PROVIDER_EMBED_PATHS.some(
-      ([host, path]) => parsed.hostname.endsWith(host) && parsed.pathname.includes(path),
+      ([host, path]) =>
+        (parsed.hostname === host || parsed.hostname.endsWith(`.${host}`)) &&
+        (parsed.pathname === path || parsed.pathname.startsWith(`${path}/`)),
     )
   );
 };
@@ -51,7 +53,7 @@ const isEmbedDocumentUrl = (url: string, uri?: string, baseUrl?: string): boolea
     return true;
   }
   const normalized = normalizeUrl(url);
-  if (uri != null && (normalized === normalizeUrl(uri) || url.startsWith(uri))) {
+  if (uri != null && normalized === normalizeUrl(uri)) {
     return true;
   }
   if (isProviderEmbedUrl(url)) {

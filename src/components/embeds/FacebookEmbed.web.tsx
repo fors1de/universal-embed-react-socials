@@ -98,10 +98,10 @@ export const FacebookEmbed = ({
   const ready = !embedDisabled && (usePluginFallback ? pluginReady : contentHeight != null);
 
   useEffect(() => {
+    setPluginReady(false);
+    setUsePluginFallback(isolateBlob);
     if (embedDisabled) {
       setFrameSrc(undefined);
-      setUsePluginFallback(isolateBlob);
-      setPluginReady(false);
       return;
     }
     if (isolateBlob) {

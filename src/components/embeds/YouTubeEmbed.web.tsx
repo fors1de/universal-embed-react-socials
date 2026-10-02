@@ -45,13 +45,19 @@ export const YouTubeEmbed = ({
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
 
+  const videoId = youTubeProps?.videoId || getYouTubeVideoId(url);
+  const start = getYouTubeStart(url);
+
+  const playerVars: YouTubePlayerVars = {
+    ...(start ? { start } : {}),
+    ...youTubeProps?.opts?.playerVars,
+  };
+  const src = videoId ? buildYouTubeSrc(videoId, playerVars) : '';
+
   useEffect(() => {
     setReady(false);
     setFailed(false);
-  }, [url, embedDisabled]);
-
-  const videoId = youTubeProps?.videoId || getYouTubeVideoId(url);
-  const start = getYouTubeStart(url);
+  }, [url, src, embedDisabled]);
 
   useEffect(() => {
     if (embedDisabled || videoId) {
@@ -70,18 +76,12 @@ export const YouTubeEmbed = ({
       reportError('timeout');
     }, EMBED_GIVE_UP_MS);
     return () => window.clearTimeout(id);
-  }, [url, embedDisabled, ready, videoId]);
+  }, [url, src, embedDisabled, ready, videoId]);
   const resolvedMaxWidth = resolveEmbedMaxWidth(maxWidth);
   const percentageHeight = isPercentage(height);
   const autoHeight = height == null && youTubeProps?.opts?.height == null;
   const embedHeight = youTubeProps?.opts?.height ?? (percentageHeight ? '100%' : height);
   const aspectFallback = aspectRatioHeight(resolvedMaxWidth, 16 / 9, defaultPlaceholderHeight);
-
-  const playerVars: YouTubePlayerVars = {
-    ...(start ? { start } : {}),
-    ...youTubeProps?.opts?.playerVars,
-  };
-  const src = videoId ? buildYouTubeSrc(videoId, playerVars) : '';
 
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url,

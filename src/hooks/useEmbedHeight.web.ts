@@ -19,7 +19,7 @@ export const useResponsiveEmbedScale = (
 
   useEffect(() => {
     const node = boxRef.current;
-    if (!node || typeof ResizeObserver === 'undefined') {
+    if (!node) {
       return;
     }
     const update = () => {
@@ -30,6 +30,10 @@ export const useResponsiveEmbedScale = (
       }
     };
     update();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', update);
+      return () => window.removeEventListener('resize', update);
+    }
     const observer = new ResizeObserver(update);
     observer.observe(node);
     return () => observer.disconnect();

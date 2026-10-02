@@ -87,7 +87,7 @@ export const LinkedInEmbed = ({
   });
   const { frameHeight: shellHeight, showPlaceholder } = resolveEmbedFrame({
     ready: !embedDisabled && ready,
-    fallbackHeight: resolvedPlaceholder != null ? LINKEDIN_DESIGN_HEIGHT : 0,
+    fallbackHeight: ready || embedDisabled || resolvedPlaceholder != null ? LINKEDIN_DESIGN_HEIGHT : 0,
     scale,
     height,
     waitForMeasure: false,

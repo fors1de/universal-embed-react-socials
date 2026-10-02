@@ -103,7 +103,7 @@ export const PinterestEmbed = ({
   }, [embedDisabled, embedHtml, pinHeight]);
 
   const frameHeight = typeof height === 'number' ? height : pinHeight;
-  const ready = !embedDisabled && frameHeight > 0;
+  const ready = !embedDisabled && pinHeight > 0;
   const resolvedPlaceholder = resolveEmbedPlaceholder({
     url: postHref,
     placeholderText,

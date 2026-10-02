@@ -87,7 +87,7 @@ export const InstagramEmbed = ({
   const [stage, setStage] = useState(CHECK_SCRIPT_STAGE);
   const [retryCount, setRetryCount] = useState(0);
   const embedId = useId();
-  const embedContainerKey = `${embedId}-${cleanUrlWithEndingSlash}-${retryCount}`;
+  const embedContainerKey = `${embedId}-${cleanUrlWithEndingSlash}-${captioned}-${resolvedVersion}-${retryCount}`;
   const frm = useFrame(frame);
   const reportError = useEmbedOnError(onError, url);
   const failed = stage === EMBED_FAILED_STAGE;
